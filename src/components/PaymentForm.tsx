@@ -19,6 +19,29 @@ const formatExpiry = (value: string) => {
   return digits;
 };
 
+const countries = [
+  "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
+  "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan",
+  "Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia",
+  "Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica",
+  "Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt",
+  "El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon",
+  "Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana",
+  "Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel",
+  "Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan",
+  "Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar",
+  "Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia",
+  "Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal",
+  "Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan",
+  "Palau","Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar",
+  "Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino",
+  "Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia",
+  "Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden",
+  "Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago",
+  "Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States",
+  "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe",
+];
+
 const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -28,7 +51,11 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
     cvv: "",
     cardholderName: "",
     email: "",
-    country: "United States",
+    country: "",
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
     zip: "",
   });
 
@@ -148,30 +175,61 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
           />
         </div>
 
-        {/* Country / Region */}
+        {/* Billing Address */}
         <div>
-          <label className="stripe-label">Country or region</label>
+          <label className="stripe-label">Billing address</label>
           <div className="stripe-input-group">
             <select
               value={form.country}
               onChange={(e) => update("country", e.target.value)}
               className="stripe-input-row w-full appearance-none bg-card cursor-pointer"
-            >
-              <option>United States</option>
-              <option>United Kingdom</option>
-              <option>Canada</option>
-              <option>Germany</option>
-              <option>France</option>
-              <option>Australia</option>
-              <option>Japan</option>
-            </select>
-            <input
-              value={form.zip}
-              onChange={(e) => update("zip", e.target.value)}
-              className="stripe-input-row border-t border-input"
-              placeholder="ZIP"
               required
-            />
+            >
+              <option value="" disabled>Select a country…</option>
+              {countries.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            {form.country && (
+              <>
+                <input
+                  value={form.address1}
+                  onChange={(e) => update("address1", e.target.value)}
+                  className="stripe-input-row border-t border-input"
+                  placeholder="Address line 1"
+                  required
+                />
+                <input
+                  value={form.address2}
+                  onChange={(e) => update("address2", e.target.value)}
+                  className="stripe-input-row border-t border-input"
+                  placeholder="Address line 2 (optional)"
+                />
+                <div className="flex border-t border-input">
+                  <input
+                    value={form.city}
+                    onChange={(e) => update("city", e.target.value)}
+                    className="stripe-input-row flex-1 border-r border-input"
+                    placeholder="City"
+                    required
+                  />
+                  <input
+                    value={form.state}
+                    onChange={(e) => update("state", e.target.value)}
+                    className="stripe-input-row flex-1"
+                    placeholder="State / Province"
+                    required
+                  />
+                </div>
+                <input
+                  value={form.zip}
+                  onChange={(e) => update("zip", e.target.value)}
+                  className="stripe-input-row border-t border-input"
+                  placeholder="ZIP / Postal code"
+                  required
+                />
+              </>
+            )}
           </div>
         </div>
 
