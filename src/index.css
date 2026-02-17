@@ -1,41 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 220 20% 10%;
+    --background: 0 0% 97%;
+    --foreground: 210 11% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card-foreground: 210 11% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover-foreground: 210 11% 15%;
 
-    --primary: 228 76% 52%;
+    --primary: 228 45% 45%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 96%;
-    --secondary-foreground: 220 20% 10%;
+    --secondary-foreground: 210 11% 15%;
 
     --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 46%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 228 76% 96%;
-    --accent-foreground: 228 76% 52%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 210 11% 15%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
+    --success: 152 69% 41%;
     --success-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 228 76% 52%;
+    --ring: 228 45% 45%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
+
+    /* Stripe-specific tokens */
+    --stripe-bg: 231 20% 27%;
+    --stripe-bg-light: 228 24% 35%;
+    --stripe-link: 228 45% 55%;
+    --stripe-input-bg: 0 0% 100%;
+    --stripe-input-border: 220 13% 84%;
+    --stripe-input-focus: 228 45% 55%;
+    --stripe-label: 215 16% 47%;
+    --stripe-shadow: 0 0% 0%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -44,7 +56,7 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 228 76% 52%;
+    --sidebar-ring: 228 45% 45%;
   }
 
   .dark {
@@ -72,12 +84,22 @@
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
-    --success: 142 71% 35%;
+    --success: 152 69% 35%;
     --success-foreground: 0 0% 100%;
 
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 228 76% 60%;
+
+    --stripe-bg: 231 20% 15%;
+    --stripe-bg-light: 228 24% 22%;
+    --stripe-link: 228 76% 60%;
+    --stripe-input-bg: 224 30% 12%;
+    --stripe-input-border: 217 33% 22%;
+    --stripe-input-focus: 228 76% 60%;
+    --stripe-label: 215 20% 55%;
+    --stripe-shadow: 0 0% 0%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224 76% 48%;
@@ -96,6 +118,80 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  /* Stripe-style input */
+  .stripe-input {
+    @apply w-full h-11 px-3 text-sm bg-card border border-input rounded-md
+      transition-all duration-150 ease-in-out
+      placeholder:text-muted-foreground/50
+      focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary;
+    box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.04);
+  }
+
+  .stripe-input:hover {
+    @apply border-muted-foreground/30;
+  }
+
+  /* Stripe grouped inputs */
+  .stripe-input-group {
+    @apply rounded-md border border-input overflow-hidden;
+    box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.04);
+  }
+
+  .stripe-input-group .stripe-input-row {
+    @apply w-full h-11 px-3 text-sm bg-card border-0
+      transition-all duration-150 ease-in-out
+      placeholder:text-muted-foreground/50
+      focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-inset focus:z-10;
+    box-shadow: none;
+  }
+
+  /* Stripe button */
+  .stripe-button {
+    @apply w-full h-11 rounded-md text-sm font-semibold text-primary-foreground
+      transition-all duration-150 ease-in-out;
+    background: hsl(var(--primary));
+    box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.06),
+                0 2px 5px 0 hsl(var(--stripe-shadow) / 0.04),
+                inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
+  }
+
+  .stripe-button:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.08),
+                0 3px 8px 0 hsl(var(--stripe-shadow) / 0.08),
+                inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
+  }
+
+  .stripe-button:active {
+    filter: brightness(0.95);
+    box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.08),
+                inset 0 1px 3px 0 hsl(var(--stripe-shadow) / 0.15);
+  }
+
+  .stripe-button:disabled {
+    @apply opacity-60 cursor-not-allowed;
+    filter: none;
+  }
+
+  /* Stripe label */
+  .stripe-label {
+    @apply block text-sm font-medium mb-1.5;
+    color: hsl(var(--foreground));
+  }
+
+  /* Stripe card container */
+  .stripe-card {
+    @apply bg-card rounded-xl p-6 sm:p-8;
+    box-shadow: 0 2px 4px 0 hsl(var(--stripe-shadow) / 0.04),
+                0 5px 15px 0 hsl(var(--stripe-shadow) / 0.06),
+                0 15px 35px 0 hsl(var(--stripe-shadow) / 0.08);
   }
 }
 
