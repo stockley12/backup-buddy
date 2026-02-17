@@ -57,13 +57,71 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
-      <div className="relative z-10">
-        {step === "form" && <PaymentForm amount={amount} onSuccess={handleFormSubmit} />}
-        {step === "waiting" && <WaitingScreen />}
-        {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} />}
-        {step === "success" && <PaymentSuccess amount={amount} />}
+    <div className="min-h-screen bg-stripe-bg flex">
+      {/* Left panel — branding / order summary */}
+      <div className="hidden lg:flex lg:w-[480px] xl:w-[520px] flex-col justify-between p-10 xl:p-14">
+        <div>
+          <div className="flex items-center gap-2 mb-12">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground text-sm font-bold">P</span>
+            </div>
+            <span className="text-white/90 font-semibold text-lg">Pay</span>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <p className="text-white/50 text-sm">Pay Company</p>
+              <p className="text-white text-4xl font-bold tracking-tight mt-1">${amount}</p>
+            </div>
+
+            <div className="space-y-4 mt-8">
+              <div className="flex items-center justify-between py-3 border-b border-white/10">
+                <div>
+                  <p className="text-white/90 text-sm font-medium">Premium Plan</p>
+                  <p className="text-white/40 text-xs mt-0.5">Monthly subscription</p>
+                </div>
+                <p className="text-white/90 text-sm font-medium">${amount}</p>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-white/10">
+                <p className="text-white/50 text-sm">Subtotal</p>
+                <p className="text-white/90 text-sm">${amount}</p>
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <p className="text-white/90 text-sm font-semibold">Total due today</p>
+                <p className="text-white text-sm font-semibold">${amount}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 text-white/30 text-xs">
+          <span>Powered by <span className="font-semibold text-white/50">Pay</span></span>
+          <span>·</span>
+          <a href="#" className="hover:text-white/50 transition-colors">Terms</a>
+          <a href="#" className="hover:text-white/50 transition-colors">Privacy</a>
+        </div>
+      </div>
+
+      {/* Right panel — form area */}
+      <div className="flex-1 flex items-start justify-center bg-background rounded-tl-none lg:rounded-tl-2xl lg:rounded-bl-2xl overflow-y-auto">
+        <div className="w-full max-w-[440px] py-10 px-5 sm:px-0 sm:py-14">
+          {/* Mobile header */}
+          <div className="lg:hidden mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground text-xs font-bold">P</span>
+              </div>
+              <span className="text-foreground font-semibold">Pay</span>
+            </div>
+            <p className="text-muted-foreground text-sm">Pay Company</p>
+            <p className="text-foreground text-3xl font-bold tracking-tight mt-1">${amount}</p>
+          </div>
+
+          {step === "form" && <PaymentForm amount={amount} onSuccess={handleFormSubmit} />}
+          {step === "waiting" && <WaitingScreen />}
+          {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} />}
+          {step === "success" && <PaymentSuccess amount={amount} />}
+        </div>
       </div>
     </div>
   );
