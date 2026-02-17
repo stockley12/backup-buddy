@@ -1,24 +1,43 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2 } from "lucide-react";
-
 interface PaymentSuccessProps {
   amount: string;
 }
 
 const PaymentSuccess = ({ amount }: PaymentSuccessProps) => {
   return (
-    <Card className="w-full max-w-md shadow-lg">
-      <CardContent className="flex flex-col items-center py-12 gap-4">
-        <div className="animate-bounce">
-          <CheckCircle2 className="h-20 w-20" style={{ color: "hsl(142, 71%, 45%)" }} />
+    <div className="w-full max-w-md animate-fade-up">
+      <div className="glass-card rounded-2xl overflow-hidden px-8 py-16">
+        <div className="flex flex-col items-center gap-6 text-center">
+          {/* Animated checkmark */}
+          <div className="h-20 w-20 rounded-full bg-success/10 flex items-center justify-center animate-scale-in">
+            <svg
+              className="h-10 w-10 text-success"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path
+                d="M5 13l4 4L19 7"
+                strokeDasharray="100"
+                className="animate-check-draw"
+                style={{ animationDelay: "0.3s", strokeDashoffset: "100" }}
+              />
+            </svg>
+          </div>
+
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold text-foreground">Payment Successful</h2>
+            <p className="text-3xl font-bold text-foreground mt-2">${amount}</p>
+          </div>
+
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+            Your payment has been processed successfully. You'll receive a confirmation email shortly.
+          </p>
         </div>
-        <h2 className="text-2xl font-semibold">Payment Successful</h2>
-        <p className="text-3xl font-bold text-primary">${amount}</p>
-        <p className="text-sm text-muted-foreground text-center">
-          Your payment has been processed successfully.
-        </p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

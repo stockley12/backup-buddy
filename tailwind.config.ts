@@ -39,6 +39,10 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -65,25 +69,47 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "scale-in": {
+          "0%": { opacity: "0", transform: "scale(0.9)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.6" },
+        },
+        "shimmer": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        "check-draw": {
+          "0%": { strokeDashoffset: "100" },
+          "100%": { strokeDashoffset: "0" },
+        },
+        "spin-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-up": "fade-up 0.5s ease-out forwards",
+        "scale-in": "scale-in 0.3s ease-out forwards",
+        "pulse-soft": "pulse-soft 2s ease-in-out infinite",
+        "shimmer": "shimmer 2s linear infinite",
+        "check-draw": "check-draw 0.6s ease-out forwards",
+        "spin-slow": "spin-slow 3s linear infinite",
       },
     },
   },
