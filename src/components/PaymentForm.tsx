@@ -158,10 +158,6 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
                 <div className={`h-5 w-8 rounded bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "amex" ? "opacity-100" : "opacity-25"}`}>
                   <span className="text-[6px] font-bold text-white tracking-tight">AMEX</span>
                 </div>
-                {/* Discover */}
-                <div className={`h-5 w-8 rounded bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "discover" ? "opacity-100" : "opacity-25"}`}>
-                  <span className="text-[5px] font-bold text-white tracking-tight">DISC</span>
-                </div>
               </div>
             </div>
             <div className="flex border-t border-input">
