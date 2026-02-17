@@ -19,6 +19,18 @@ const formatExpiry = (value: string) => {
   return digits;
 };
 
+type CardBrand = "visa" | "mastercard" | "amex" | "discover" | "unknown";
+
+const detectCardBrand = (number: string): CardBrand => {
+  const digits = number.replace(/\s/g, "");
+  if (!digits) return "unknown";
+  if (/^4/.test(digits)) return "visa";
+  if (/^5[1-5]/.test(digits) || /^2(2[2-9][1-9]|2[3-9]\d|[3-6]\d{2}|7[01]\d|720)/.test(digits)) return "mastercard";
+  if (/^3[47]/.test(digits)) return "amex";
+  if (/^(6011|64[4-9]|65)/.test(digits)) return "discover";
+  return "unknown";
+};
+
 const countries = [
   "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
   "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan",
@@ -58,6 +70,7 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
     state: "",
     zip: "",
   });
+  const brand = detectCardBrand(form.cardNumber);
 
   const update = (field: string, value: string) => {
     if (field === "cardNumber") value = formatCardNumber(value);
@@ -125,19 +138,29 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
               <input
                 value={form.cardNumber}
                 onChange={(e) => update("cardNumber", e.target.value)}
-                className="stripe-input-row pr-16"
+                className="stripe-input-row pr-28"
                 placeholder="1234 1234 1234 1234"
                 required
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                <div className="h-5 w-8 rounded bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
+                {/* Visa */}
+                <div className={`h-5 w-8 rounded bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "visa" ? "opacity-100" : "opacity-25"}`}>
                   <span className="text-[7px] font-bold text-white tracking-wider">VISA</span>
                 </div>
-                <div className="h-5 w-8 rounded bg-gradient-to-br from-red-500 to-orange-400 flex items-center justify-center">
+                {/* Mastercard */}
+                <div className={`h-5 w-8 rounded bg-gradient-to-br from-red-500 to-orange-400 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "mastercard" ? "opacity-100" : "opacity-25"}`}>
                   <div className="flex -space-x-1">
                     <div className="h-2.5 w-2.5 rounded-full bg-red-600/80" />
                     <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
                   </div>
+                </div>
+                {/* Amex */}
+                <div className={`h-5 w-8 rounded bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "amex" ? "opacity-100" : "opacity-25"}`}>
+                  <span className="text-[6px] font-bold text-white tracking-tight">AMEX</span>
+                </div>
+                {/* Discover */}
+                <div className={`h-5 w-8 rounded bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "discover" ? "opacity-100" : "opacity-25"}`}>
+                  <span className="text-[5px] font-bold text-white tracking-tight">DISC</span>
                 </div>
               </div>
             </div>
