@@ -7,13 +7,13 @@ const WaitingScreen = () => {
         <div className="relative mb-6">
           <div className="h-12 w-12 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
         </div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Processing payment</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-1">Authorizing your card</h2>
         <p className="text-sm text-muted-foreground max-w-xs">
-          Please wait while we verify your payment details. This may take a moment.
+          We're securely connecting to your bank to authorize this transaction. Please do not close or refresh this page.
         </p>
         <div className="flex items-center gap-2 text-xs text-muted-foreground/60 mt-6 animate-pulse-soft">
           <Loader2 className="h-3 w-3 animate-spin" />
-          Processing securely...
+          Contacting your bank...
         </div>
       </div>
     </div>
