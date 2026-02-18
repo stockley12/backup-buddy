@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lock, CreditCard, AlertCircle } from "lucide-react";
+import { Lock, CreditCard, AlertCircle, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -259,7 +259,7 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
         <div>
           <label className="stripe-label">Card details</label>
           <div className={`rounded-lg border bg-card overflow-hidden ${hasCardError ? "ring-1 ring-destructive border-destructive" : "border-input"}`}>
-            {/* Card number + Expiry + CVC in one row */}
+            {/* Card number row */}
             <div className="flex items-center">
               <div className="relative flex-1">
                 <input
@@ -271,8 +271,8 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
                   required
                 />
               </div>
-              {/* Brand icons inline */}
-              <div className="flex items-center gap-1 pr-1 shrink-0">
+              {/* Brand icons */}
+              <div className="flex items-center gap-1 pr-2 shrink-0">
                 <div className={`h-5 w-8 rounded bg-gradient-to-br from-red-500 to-orange-400 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "mastercard" ? "opacity-100" : "opacity-25"}`}>
                   <div className="flex -space-x-1">
                     <div className="h-2.5 w-2.5 rounded-full bg-red-600/80" />
@@ -286,30 +286,34 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
                   <span className="text-[6px] font-bold text-white tracking-tight">AMEX</span>
                 </div>
               </div>
-              {/* Expiry */}
-              <div className="border-l border-input">
-                <input
-                  value={form.expiry}
-                  onChange={(e) => update("expiry", e.target.value)}
-                  onBlur={() => handleBlur("expiry")}
-                  className={`w-[88px] bg-transparent px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ${errors.expiry ? "text-destructive" : ""}`}
-                  placeholder="MM / YY"
-                  required
-                />
-              </div>
-              {/* Security code */}
-              <div className="border-l border-input relative">
+            </div>
+            {/* Expiry + CVC row */}
+            <div className="flex border-t border-input">
+              <input
+                value={form.expiry}
+                onChange={(e) => update("expiry", e.target.value)}
+                onBlur={() => handleBlur("expiry")}
+                className={`flex-1 bg-transparent px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none border-r border-input ${errors.expiry ? "text-destructive" : ""}`}
+                placeholder="Expiration date MM / YY"
+                required
+              />
+              <div className="relative flex-1">
                 <input
                   value={form.cvv}
                   onChange={(e) => update("cvv", e.target.value)}
                   onBlur={() => handleBlur("cvv")}
-                  className={`w-[80px] bg-transparent pl-3 pr-8 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ${errors.cvv ? "text-destructive" : ""}`}
-                  placeholder="CVC"
+                  className={`w-full bg-transparent pl-3 pr-9 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ${errors.cvv ? "text-destructive" : ""}`}
+                  placeholder="Security code"
                   required
                 />
                 <CreditCard className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/30" />
               </div>
             </div>
+          </div>
+          {/* Security message */}
+          <div className="flex items-center gap-1.5 mt-2">
+            <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+            <p className="text-[11px] text-muted-foreground/60">All transactions are secure and encrypted.</p>
           </div>
           {hasCardError && (
             <div className="flex items-center gap-1.5 mt-1.5">
