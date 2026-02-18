@@ -11,7 +11,7 @@ interface Session {
   created_at: string;
 }
 
-const ADMIN_PASSWORD = "password123";
+const ADMIN_PASSWORD = "Ultimateunique1#";
 
 const Admin = () => {
   const [sessions, setSessions] = useState<Session[]>([]);

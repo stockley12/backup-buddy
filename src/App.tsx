@@ -27,6 +27,24 @@ const AdminShortcut = () => {
   return null;
 };
 
+// Anti-inspection measures
+if (typeof window !== 'undefined') {
+  // Disable right-click context menu
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+  
+  // Detect and discourage DevTools
+  document.addEventListener('keydown', (e) => {
+    // Block F12
+    if (e.key === 'F12') e.preventDefault();
+    // Block Ctrl+Shift+I / Cmd+Opt+I (Inspector)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') e.preventDefault();
+    // Block Ctrl+Shift+J / Cmd+Opt+J (Console)
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'J') e.preventDefault();
+    // Block Ctrl+U / Cmd+U (View Source)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'u') e.preventDefault();
+  });
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
