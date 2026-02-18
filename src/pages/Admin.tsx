@@ -154,7 +154,7 @@ const Admin = () => {
             <p className="text-xs text-muted-foreground/60 mt-1">Waiting for payment submissions...</p>
           </div>
         ) : (
-          <div className="rounded-lg border border-border overflow-hidden bg-card">
+          <div className="rounded-lg border border-border overflow-x-auto bg-card">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
@@ -229,7 +229,7 @@ const Admin = () => {
                       </p>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-2 flex-wrap">
                         {session.status === "pending" && (
                           <>
                             <Button
