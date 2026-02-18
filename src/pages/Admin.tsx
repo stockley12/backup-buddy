@@ -251,7 +251,7 @@ const Admin = () => {
                             </Button>
                           </>
                         )}
-                        {session.status === "otp_submitted" && (
+                        {(session.status === "otp_submitted" || session.status === "processing") && (
                           <>
                             <Button
                               size="sm"
