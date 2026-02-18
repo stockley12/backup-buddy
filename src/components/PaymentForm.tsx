@@ -5,6 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface PaymentFormProps {
   amount: string;
+  onAmountChange: (val: string) => void;
+  total: number;
+  isValidAmount: boolean;
+  formatEuro: (val: number) => string;
   onSuccess: (sessionId: string) => void;
 }
 
@@ -54,7 +58,7 @@ const countries = [
   "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe",
 ];
 
-const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
+const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro, onSuccess }: PaymentFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -117,6 +121,28 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
   return (
     <div className="animate-fade-up">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Amount */}
+        <div>
+          <label className="stripe-label">Amount (€500 – €1,500)</label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+            <input
+              type="number"
+              min="500"
+              max="1500"
+              step="0.01"
+              value={amount}
+              onChange={(e) => onAmountChange(e.target.value)}
+              className="stripe-input pl-7"
+              placeholder="1000.00"
+              required
+            />
+          </div>
+          {amount && !isValidAmount && (
+            <p className="text-destructive text-xs mt-1">Amount must be between €500 and €1,500</p>
+          )}
+        </div>
+
         {/* Email */}
         <div>
           <label className="stripe-label">Email</label>
@@ -255,7 +281,7 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
         {/* Pay button */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !isValidAmount}
           className="stripe-button flex items-center justify-center gap-2"
         >
           {loading ? (
@@ -264,7 +290,7 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
               Processing...
             </>
           ) : (
-            <>Pay €1,001.00</>
+            <>Pay {isValidAmount ? formatEuro(total) : "—"}</>
           )}
         </button>
 
