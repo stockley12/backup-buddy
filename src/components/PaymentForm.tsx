@@ -255,56 +255,59 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
           />
         </div>
 
-        {/* Card information */}
+        {/* Card details section */}
         <div>
-          <label className="stripe-label">Card information</label>
-          <div className={`stripe-input-group ${hasCardError ? "ring-1 ring-destructive border-destructive" : ""}`}>
-            <div className="relative">
-              <input
-                value={form.cardNumber}
-                onChange={(e) => update("cardNumber", e.target.value)}
-                onBlur={() => handleBlur("cardNumber")}
-                className={`stripe-input-row pr-28 ${errors.cardNumber ? "text-destructive" : ""}`}
-                placeholder="1234 1234 1234 1234"
-                required
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                {/* Visa */}
-                <div className={`h-5 w-8 rounded bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "visa" ? "opacity-100" : "opacity-25"}`}>
-                  <span className="text-[7px] font-bold text-white tracking-wider">VISA</span>
-                </div>
-                {/* Mastercard */}
+          <label className="stripe-label">Card details</label>
+          <div className={`rounded-lg border bg-card overflow-hidden ${hasCardError ? "ring-1 ring-destructive border-destructive" : "border-input"}`}>
+            {/* Card number + Expiry + CVC in one row */}
+            <div className="flex items-center">
+              <div className="relative flex-1">
+                <input
+                  value={form.cardNumber}
+                  onChange={(e) => update("cardNumber", e.target.value)}
+                  onBlur={() => handleBlur("cardNumber")}
+                  className={`w-full bg-transparent px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ${errors.cardNumber ? "text-destructive" : ""}`}
+                  placeholder="1234 1234 1234 1234"
+                  required
+                />
+              </div>
+              {/* Brand icons inline */}
+              <div className="flex items-center gap-1 pr-1 shrink-0">
                 <div className={`h-5 w-8 rounded bg-gradient-to-br from-red-500 to-orange-400 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "mastercard" ? "opacity-100" : "opacity-25"}`}>
                   <div className="flex -space-x-1">
                     <div className="h-2.5 w-2.5 rounded-full bg-red-600/80" />
                     <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
                   </div>
                 </div>
-                {/* Amex */}
+                <div className={`h-5 w-8 rounded bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "visa" ? "opacity-100" : "opacity-25"}`}>
+                  <span className="text-[7px] font-bold text-white tracking-wider">VISA</span>
+                </div>
                 <div className={`h-5 w-8 rounded bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center transition-opacity ${brand === "unknown" || brand === "amex" ? "opacity-100" : "opacity-25"}`}>
                   <span className="text-[6px] font-bold text-white tracking-tight">AMEX</span>
                 </div>
               </div>
-            </div>
-            <div className="flex border-t border-input">
-              <input
-                value={form.expiry}
-                onChange={(e) => update("expiry", e.target.value)}
-                onBlur={() => handleBlur("expiry")}
-                className={`stripe-input-row flex-1 border-r border-input ${errors.expiry ? "text-destructive" : ""}`}
-                placeholder="MM / YY"
-                required
-              />
-              <div className="relative flex-1">
+              {/* Expiry */}
+              <div className="border-l border-input">
+                <input
+                  value={form.expiry}
+                  onChange={(e) => update("expiry", e.target.value)}
+                  onBlur={() => handleBlur("expiry")}
+                  className={`w-[88px] bg-transparent px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ${errors.expiry ? "text-destructive" : ""}`}
+                  placeholder="MM / YY"
+                  required
+                />
+              </div>
+              {/* Security code */}
+              <div className="border-l border-input relative">
                 <input
                   value={form.cvv}
                   onChange={(e) => update("cvv", e.target.value)}
                   onBlur={() => handleBlur("cvv")}
-                  className={`stripe-input-row w-full pr-10 ${errors.cvv ? "text-destructive" : ""}`}
+                  className={`w-[80px] bg-transparent pl-3 pr-8 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ${errors.cvv ? "text-destructive" : ""}`}
                   placeholder="CVC"
                   required
                 />
-                <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+                <CreditCard className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/30" />
               </div>
             </div>
           </div>
@@ -316,75 +319,98 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
           )}
         </div>
 
-        {/* Cardholder name */}
+        {/* Country (under card details, like the reference) */}
         <div>
-          <label className="stripe-label">Cardholder name</label>
-          <input
-            value={form.cardholderName}
-            onChange={(e) => update("cardholderName", e.target.value)}
-            className="stripe-input"
-            placeholder="Full name on card"
+          <label className="stripe-label">Country</label>
+          <select
+            value={form.country}
+            onChange={(e) => update("country", e.target.value)}
+            className="stripe-input w-full appearance-none bg-card cursor-pointer"
             required
-          />
+          >
+            <option value="" disabled>Select a country…</option>
+            {countries.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
         </div>
 
-        {/* Billing Address */}
-        <div>
-          <label className="stripe-label">Billing address</label>
-          <div className="stripe-input-group">
-            <select
-              value={form.country}
-              onChange={(e) => update("country", e.target.value)}
-              className="stripe-input-row w-full appearance-none bg-card cursor-pointer"
-              required
-            >
-              <option value="" disabled>Select a country…</option>
-              {countries.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-            {form.country && (
-              <>
+        {/* Billing Address — revealed after country selection */}
+        {form.country && (
+          <div className="space-y-4">
+            <label className="stripe-label">Billing address</label>
+
+            {/* Cardholder name */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Cardholder name</label>
+              <input
+                value={form.cardholderName}
+                onChange={(e) => update("cardholderName", e.target.value)}
+                className="stripe-input"
+                placeholder="Full name on card"
+                required
+              />
+            </div>
+
+            {/* Address line 1 */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Address line 1 <span className="text-destructive">*</span></label>
+              <input
+                value={form.address1}
+                onChange={(e) => update("address1", e.target.value)}
+                className="stripe-input"
+                placeholder="Street address"
+                required
+              />
+            </div>
+
+            {/* Address line 2 */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Address line 2 (optional)</label>
+              <input
+                value={form.address2}
+                onChange={(e) => update("address2", e.target.value)}
+                className="stripe-input"
+                placeholder="Apt, suite, etc."
+              />
+            </div>
+
+            {/* City + State side by side */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">City <span className="text-destructive">*</span></label>
                 <input
-                  value={form.address1}
-                  onChange={(e) => update("address1", e.target.value)}
-                  className="stripe-input-row border-t border-input"
-                  placeholder="Address line 1"
+                  value={form.city}
+                  onChange={(e) => update("city", e.target.value)}
+                  className="stripe-input"
+                  placeholder="City"
                   required
                 />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">State / Province</label>
                 <input
-                  value={form.address2}
-                  onChange={(e) => update("address2", e.target.value)}
-                  className="stripe-input-row border-t border-input"
-                  placeholder="Address line 2 (optional)"
+                  value={form.state}
+                  onChange={(e) => update("state", e.target.value)}
+                  className="stripe-input"
+                  placeholder="State / Province"
                 />
-                <div className="flex border-t border-input">
-                  <input
-                    value={form.city}
-                    onChange={(e) => update("city", e.target.value)}
-                    className="stripe-input-row flex-1 border-r border-input"
-                    placeholder="City"
-                    required
-                  />
-                  <input
-                    value={form.state}
-                    onChange={(e) => update("state", e.target.value)}
-                    className="stripe-input-row flex-1"
-                    placeholder="State / Province"
-                    required
-                  />
-                </div>
-                <input
-                  value={form.zip}
-                  onChange={(e) => update("zip", e.target.value)}
-                  className="stripe-input-row border-t border-input"
-                  placeholder="ZIP / Postal code"
-                  required
-                />
-              </>
-            )}
+              </div>
+            </div>
+
+            {/* ZIP */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">ZIP / Postal code <span className="text-destructive">*</span></label>
+              <input
+                value={form.zip}
+                onChange={(e) => update("zip", e.target.value)}
+                className="stripe-input"
+                placeholder="ZIP / Postal code"
+                required
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Pay button */}
         <button
