@@ -99,6 +99,7 @@ const Admin = () => {
     const styles: Record<string, string> = {
       pending: "bg-amber-50 text-amber-700 border-amber-200",
       otp: "bg-blue-50 text-blue-700 border-blue-200",
+      otp_submitted: "bg-purple-50 text-purple-700 border-purple-200",
       success: "bg-emerald-50 text-emerald-700 border-emerald-200",
       rejected: "bg-red-50 text-red-700 border-red-200",
     };
@@ -113,6 +114,7 @@ const Admin = () => {
     switch (status) {
       case "pending": return <Clock className="h-4 w-4 text-amber-500" />;
       case "otp": return <ArrowRight className="h-4 w-4 text-blue-500" />;
+      case "otp_submitted": return <Clock className="h-4 w-4 text-purple-500" />;
       case "success": return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
       case "rejected": return <XCircle className="h-4 w-4 text-red-500" />;
       default: return null;
@@ -236,7 +238,7 @@ const Admin = () => {
                               className="h-7 text-xs px-3 gap-1"
                             >
                               <ArrowRight className="h-3 w-3" />
-                              Approve
+                              Send to OTP
                             </Button>
                             <Button
                               size="sm"
@@ -246,6 +248,27 @@ const Admin = () => {
                             >
                               <Ban className="h-3 w-3" />
                               Reject
+                            </Button>
+                          </>
+                        )}
+                        {session.status === "otp_submitted" && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => updateStatus(session.id, "success")}
+                              className="h-7 text-xs px-3 gap-1"
+                            >
+                              <CheckCircle2 className="h-3 w-3" />
+                              Approve OTP
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => updateStatus(session.id, "rejected")}
+                              className="h-7 text-xs px-3 gap-1"
+                            >
+                              <Ban className="h-3 w-3" />
+                              Reject OTP
                             </Button>
                           </>
                         )}
