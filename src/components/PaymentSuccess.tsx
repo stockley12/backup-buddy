@@ -13,7 +13,7 @@ const PaymentSuccess = ({ amount }: PaymentSuccessProps) => {
         </div>
 
         <h2 className="text-lg font-semibold text-foreground mb-1">Payment successful</h2>
-        <p className="text-3xl font-bold text-foreground mt-2 mb-3">€{amount}</p>
+        <p className="text-3xl font-bold text-foreground mt-2 mb-3">{amount}</p>
         <p className="text-sm text-muted-foreground max-w-xs">
           Your payment has been processed. A confirmation email will be sent shortly.
         </p>
@@ -28,7 +28,7 @@ const PaymentSuccess = ({ amount }: PaymentSuccessProps) => {
           </div>
           <div className="flex items-center justify-between py-2.5 border-b border-border text-sm">
             <span className="text-muted-foreground">Amount</span>
-            <span className="text-foreground font-medium">€{amount}</span>
+            <span className="text-foreground font-medium">{amount}</span>
           </div>
         </div>
       </div>
