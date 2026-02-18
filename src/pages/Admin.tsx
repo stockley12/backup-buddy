@@ -155,14 +155,17 @@ const Admin = () => {
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Customer</th>
-                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Card</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Card Details</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Billing Address</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Date</th>
                   <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {sessions.map((session, i) => (
+                {sessions.map((session, i) => {
+                  const d = session.form_data || {};
+                  return (
                   <tr
                     key={session.id}
                     className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${
@@ -170,19 +173,32 @@ const Admin = () => {
                     }`}
                   >
                     <td className="px-4 py-3">
-                      <div>
+                      <div className="space-y-0.5">
                         <p className="text-sm font-medium text-foreground">
-                          {session.form_data?.cardholderName || "Unknown"}
+                          {d.cardholderName || "Unknown"}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {session.form_data?.email || "—"}
+                          {d.email || "—"}
                         </p>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {session.form_data?.cardNumber || "—"}
-                      </p>
+                      <div className="space-y-0.5">
+                        <p className="text-xs text-foreground font-mono">{d.cardNumber || "—"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Exp: {d.expiry || "—"} &middot; CVV: {d.cvv || "—"}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="space-y-0.5 max-w-[200px]">
+                        {d.address1 && <p className="text-xs text-foreground">{d.address1}</p>}
+                        {d.address2 && <p className="text-xs text-muted-foreground">{d.address2}</p>}
+                        <p className="text-xs text-muted-foreground">
+                          {[d.city, d.state, d.zip].filter(Boolean).join(", ") || "—"}
+                        </p>
+                        {d.country && <p className="text-xs text-muted-foreground">{d.country}</p>}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -223,7 +239,8 @@ const Admin = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
