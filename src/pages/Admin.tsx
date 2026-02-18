@@ -155,6 +155,7 @@ const Admin = () => {
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Customer</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Amount</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Card Details</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Billing Address</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
@@ -181,6 +182,9 @@ const Admin = () => {
                           {d.email || "—"}
                         </p>
                       </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-sm font-medium text-foreground">€{d.amount || "—"}</p>
                     </td>
                     <td className="px-4 py-3">
                       <div className="space-y-0.5">

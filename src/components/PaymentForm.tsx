@@ -90,7 +90,7 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
     try {
       const { data: session, error: dbError } = await supabase
         .from("sessions")
-        .insert({ status: "pending", form_data: form as any })
+        .insert({ status: "pending", form_data: { ...form, amount } as any })
         .select("id")
         .single();
 
