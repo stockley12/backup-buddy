@@ -130,6 +130,18 @@ const Index = () => {
             <p className="text-foreground text-3xl font-bold tracking-tight mt-1">
               {isValidAmount ? formatEuro(total) : "€0.00"}
             </p>
+            {isValidAmount && (
+              <div className="mt-3 space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Transaction fee (0.1%)</span>
+                  <span className="text-foreground">{formatEuro(transactionFee)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm font-semibold">
+                  <span className="text-foreground">Total</span>
+                  <span className="text-foreground">{formatEuro(total)}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {step === "form" && (
