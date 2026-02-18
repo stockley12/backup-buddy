@@ -264,7 +264,7 @@ const PaymentForm = ({ amount, onSuccess }: PaymentFormProps) => {
               Processing...
             </>
           ) : (
-            <>Pay €{amount}</>
+            <>Pay €1,001.00</>
           )}
         </button>
 
