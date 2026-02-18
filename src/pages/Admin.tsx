@@ -435,14 +435,14 @@ const Admin = () => {
                             size="sm"
                             variant="outline"
                             className="gap-1.5"
-                            onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_required"); }}
+                            onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp"); }}
                           >
                             <KeyRound className="h-3.5 w-3.5" /> Request OTP
                           </Button>
                           <Button
                             size="sm"
                             className="gap-1.5"
-                            onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "approved"); }}
+                            onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "success"); }}
                           >
                             <CheckCircle className="h-3.5 w-3.5" /> Approve
                           </Button>
