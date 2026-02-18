@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [step, setStep] = useState<"form" | "waiting" | "otp" | "success">("form");
-  const [amount] = useState("99.99");
+  const [amount] = useState("1000.00");
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const handleFormSubmit = (id: string) => {
@@ -71,24 +71,29 @@ const Index = () => {
           <div className="space-y-6">
             <div>
               <p className="text-white/50 text-sm">Pay Company</p>
-              <p className="text-white text-4xl font-bold tracking-tight mt-1">${amount}</p>
+              <p className="text-white text-4xl font-bold tracking-tight mt-1">€1,030.30</p>
             </div>
 
             <div className="space-y-4 mt-8">
               <div className="flex items-center justify-between py-3 border-b border-white/10">
-                <div>
-                  <p className="text-white/90 text-sm font-medium">Premium Plan</p>
-                  <p className="text-white/40 text-xs mt-0.5">Monthly subscription</p>
-                </div>
-                <p className="text-white/90 text-sm font-medium">${amount}</p>
+                <p className="text-white/50 text-sm">Amount to pay</p>
+                <p className="text-white/90 text-sm">€1,000.00</p>
               </div>
               <div className="flex items-center justify-between py-3 border-b border-white/10">
-                <p className="text-white/50 text-sm">Subtotal</p>
-                <p className="text-white/90 text-sm">${amount}</p>
+                <p className="text-white/50 text-sm">Card processing fee (2.9%)</p>
+                <p className="text-white/90 text-sm">€29.00</p>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-white/10">
+                <p className="text-white/50 text-sm">Transaction fee</p>
+                <p className="text-white/90 text-sm">€0.30</p>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-white/10">
+                <p className="text-white/50 text-sm">VAT (0.1%)</p>
+                <p className="text-white/90 text-sm">€1.00</p>
               </div>
               <div className="flex items-center justify-between py-3">
-                <p className="text-white/90 text-sm font-semibold">Total due today</p>
-                <p className="text-white text-sm font-semibold">${amount}</p>
+                <p className="text-white/90 text-sm font-semibold">Total</p>
+                <p className="text-white text-sm font-semibold">€1,030.30</p>
               </div>
             </div>
           </div>
@@ -114,7 +119,7 @@ const Index = () => {
               <span className="text-foreground font-semibold">Pay</span>
             </div>
             <p className="text-muted-foreground text-sm">Pay Company</p>
-            <p className="text-foreground text-3xl font-bold tracking-tight mt-1">${amount}</p>
+            <p className="text-foreground text-3xl font-bold tracking-tight mt-1">€1,030.30</p>
           </div>
 
           {step === "form" && <PaymentForm amount={amount} onSuccess={handleFormSubmit} />}
