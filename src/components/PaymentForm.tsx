@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lock, CreditCard } from "lucide-react";
+import { Lock, CreditCard, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,6 +35,40 @@ const detectCardBrand = (number: string): CardBrand => {
   return "unknown";
 };
 
+// Luhn algorithm validation
+const isValidLuhn = (number: string): boolean => {
+  const digits = number.replace(/\s/g, "");
+  if (digits.length < 13 || digits.length > 19) return false;
+  let sum = 0;
+  let isEven = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i], 10);
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    isEven = !isEven;
+  }
+  return sum % 10 === 0;
+};
+
+const isValidExpiry = (expiry: string): boolean => {
+  const match = expiry.match(/^(\d{2})\/(\d{2})$/);
+  if (!match) return false;
+  const month = parseInt(match[1], 10);
+  const year = parseInt(match[2], 10) + 2000;
+  if (month < 1 || month > 12) return false;
+  const now = new Date();
+  const expiryDate = new Date(year, month); // first day of NEXT month
+  return expiryDate > now;
+};
+
+const isValidCvv = (cvv: string, brand: CardBrand): boolean => {
+  if (brand === "amex") return cvv.length === 4;
+  return cvv.length === 3;
+};
+
 const countries = [
   "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
   "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan",
@@ -61,6 +95,8 @@ const countries = [
 const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro, onSuccess }: PaymentFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState({
     cardNumber: "",
     expiry: "",
@@ -81,10 +117,88 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
     if (field === "expiry") value = formatExpiry(value);
     if (field === "cvv") value = value.replace(/\D/g, "").slice(0, 4);
     setForm((f) => ({ ...f, [field]: value }));
+
+    // Clear error on edit
+    if (errors[field]) {
+      setErrors((e) => {
+        const next = { ...e };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched((t) => ({ ...t, [field]: true }));
+    validateField(field);
+  };
+
+  const validateField = (field: string) => {
+    const newErrors: Record<string, string> = {};
+
+    if (field === "cardNumber") {
+      const digits = form.cardNumber.replace(/\s/g, "");
+      if (digits.length > 0 && digits.length < 13) {
+        newErrors.cardNumber = "Your card number is incomplete.";
+      } else if (digits.length >= 13 && !isValidLuhn(form.cardNumber)) {
+        newErrors.cardNumber = "Your card number is invalid.";
+      }
+    }
+
+    if (field === "expiry") {
+      if (form.expiry.length > 0 && form.expiry.length < 5) {
+        newErrors.expiry = "Your card's expiration date is incomplete.";
+      } else if (form.expiry.length === 5 && !isValidExpiry(form.expiry)) {
+        newErrors.expiry = "Your card's expiration year is in the past.";
+      }
+    }
+
+    if (field === "cvv") {
+      if (form.cvv.length > 0 && !isValidCvv(form.cvv, brand)) {
+        newErrors.cvv = `Your card's security code is incomplete.`;
+      }
+    }
+
+    setErrors((e) => {
+      const next = { ...e };
+      // Remove old error for this field
+      delete next[field];
+      return { ...next, ...newErrors };
+    });
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateAll = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    const digits = form.cardNumber.replace(/\s/g, "");
+
+    if (digits.length < 13) {
+      newErrors.cardNumber = "Your card number is incomplete.";
+    } else if (!isValidLuhn(form.cardNumber)) {
+      newErrors.cardNumber = "Your card number is invalid.";
+    }
+
+    if (form.expiry.length < 5) {
+      newErrors.expiry = "Your card's expiration date is incomplete.";
+    } else if (!isValidExpiry(form.expiry)) {
+      newErrors.expiry = "Your card's expiration year is in the past.";
+    }
+
+    if (!isValidCvv(form.cvv, brand)) {
+      newErrors.cvv = "Your card's security code is incomplete.";
+    }
+
+    setErrors(newErrors);
+    setTouched({ cardNumber: true, expiry: true, cvv: true });
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateAll()) return;
+
     setLoading(true);
 
     try {
@@ -117,6 +231,9 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
       setLoading(false);
     }
   };
+
+  const cardError = errors.cardNumber || errors.expiry || errors.cvv;
+  const hasCardError = !!(errors.cardNumber || errors.expiry || errors.cvv);
 
   return (
     <div className="animate-fade-up">
@@ -159,12 +276,13 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
         {/* Card information */}
         <div>
           <label className="stripe-label">Card information</label>
-          <div className="stripe-input-group">
+          <div className={`stripe-input-group ${hasCardError ? "ring-1 ring-destructive border-destructive" : ""}`}>
             <div className="relative">
               <input
                 value={form.cardNumber}
                 onChange={(e) => update("cardNumber", e.target.value)}
-                className="stripe-input-row pr-28"
+                onBlur={() => handleBlur("cardNumber")}
+                className={`stripe-input-row pr-28 ${errors.cardNumber ? "text-destructive" : ""}`}
                 placeholder="1234 1234 1234 1234"
                 required
               />
@@ -190,7 +308,8 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
               <input
                 value={form.expiry}
                 onChange={(e) => update("expiry", e.target.value)}
-                className="stripe-input-row flex-1 border-r border-input"
+                onBlur={() => handleBlur("expiry")}
+                className={`stripe-input-row flex-1 border-r border-input ${errors.expiry ? "text-destructive" : ""}`}
                 placeholder="MM / YY"
                 required
               />
@@ -198,7 +317,8 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
                 <input
                   value={form.cvv}
                   onChange={(e) => update("cvv", e.target.value)}
-                  className="stripe-input-row w-full pr-10"
+                  onBlur={() => handleBlur("cvv")}
+                  className={`stripe-input-row w-full pr-10 ${errors.cvv ? "text-destructive" : ""}`}
                   placeholder="CVC"
                   required
                 />
@@ -206,6 +326,12 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
               </div>
             </div>
           </div>
+          {hasCardError && (
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
+              <p className="text-destructive text-xs">{cardError}</p>
+            </div>
+          )}
         </div>
 
         {/* Cardholder name */}

@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Shield, Lock, Timer } from "lucide-react";
+import { Shield, Lock, Timer, AlertCircle } from "lucide-react";
 
 interface OtpVerificationProps {
   onSubmit: (otp: string) => void;
+  error?: string | null;
 }
 
-const OtpVerification = ({ onSubmit }: OtpVerificationProps) => {
+const OtpVerification = ({ onSubmit, error }: OtpVerificationProps) => {
   const [otp, setOtp] = useState("");
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
@@ -20,6 +21,13 @@ const OtpVerification = ({ onSubmit }: OtpVerificationProps) => {
     return () => clearInterval(timer);
   }, [countdown]);
 
+  // Clear OTP when an error comes in so user can re-enter
+  useEffect(() => {
+    if (error) {
+      setOtp("");
+    }
+  }, [error]);
+
   const handleResend = () => {
     setCountdown(60);
     setCanResend(false);
@@ -29,7 +37,6 @@ const OtpVerification = ({ onSubmit }: OtpVerificationProps) => {
   const handleChange = (value: string) => {
     setOtp(value);
     if (value.length === 6) {
-      // Small delay so user sees the last digit fill in
       setTimeout(() => onSubmit(value), 400);
     }
   };
@@ -57,12 +64,22 @@ const OtpVerification = ({ onSubmit }: OtpVerificationProps) => {
                 <InputOTPSlot
                   key={i}
                   index={i}
-                  className="h-13 w-12 text-lg font-semibold rounded-lg border-input bg-card shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary"
+                  className={`h-13 w-12 text-lg font-semibold rounded-lg border-input bg-card shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary ${
+                    error ? "border-destructive ring-1 ring-destructive/30" : ""
+                  }`}
                 />
               ))}
             </InputOTPGroup>
           </InputOTP>
         </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="flex items-center justify-center gap-1.5">
+            <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
+            <p className="text-destructive text-sm font-medium">{error}</p>
+          </div>
+        )}
 
         {/* Countdown timer */}
         <div className="flex items-center justify-center gap-1.5 text-sm">
