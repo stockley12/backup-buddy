@@ -158,6 +158,7 @@ const Admin = () => {
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Amount</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Card Details</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Billing Address</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">OTP</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
                   <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Date</th>
                   <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Actions</th>
@@ -203,6 +204,9 @@ const Admin = () => {
                         </p>
                         {d.country && <p className="text-xs text-muted-foreground">{d.country}</p>}
                       </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-sm font-mono font-medium text-foreground">{d.otp || "—"}</p>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
