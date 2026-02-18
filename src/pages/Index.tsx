@@ -80,7 +80,7 @@ const Index = () => {
                 <p className="text-white/90 text-sm">€1,000.00</p>
               </div>
               <div className="flex items-center justify-between py-3 border-b border-white/10">
-                <p className="text-white/50 text-sm">VAT (0.1%)</p>
+                <p className="text-white/50 text-sm">Transaction fee</p>
                 <p className="text-white/90 text-sm">€1.00</p>
               </div>
               <div className="flex items-center justify-between py-3">
