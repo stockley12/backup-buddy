@@ -78,7 +78,8 @@ const Index = () => {
 
           <div className="space-y-6">
             <div>
-              <p className="text-white/50 text-sm">Pay Company</p>
+            <p className="text-white/50 text-sm">Pay Company</p>
+              <p className="text-white/40 text-xs mt-0.5">Ref: INV#2849300392</p>
               <p className="text-white text-4xl font-bold tracking-tight mt-1">
                 {isValidAmount ? formatEuro(total) : "€0.00"}
               </p>
@@ -127,6 +128,7 @@ const Index = () => {
               <span className="text-foreground font-semibold">Pay</span>
             </div>
             <p className="text-muted-foreground text-sm">Pay Company</p>
+              <p className="text-muted-foreground/60 text-xs mt-0.5">Ref: INV#2849300392</p>
             <p className="text-foreground text-3xl font-bold tracking-tight mt-1">
               {isValidAmount ? formatEuro(total) : "€0.00"}
             </p>
