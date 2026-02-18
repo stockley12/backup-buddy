@@ -116,6 +116,9 @@ const Admin = () => {
       waiting: { variant: "secondary", label: "Waiting", dotColor: "bg-yellow-500" },
       otp_required: { variant: "default", label: "OTP Required", dotColor: "bg-primary" },
       otp: { variant: "default", label: "OTP Sent", dotColor: "bg-primary" },
+      otp_submitted: { variant: "secondary", label: "OTP Submitted", dotColor: "bg-blue-500" },
+      otp_wrong: { variant: "destructive", label: "Wrong OTP", dotColor: "bg-orange-500" },
+      otp_expired: { variant: "destructive", label: "Expired OTP", dotColor: "bg-amber-500" },
       processing: { variant: "secondary", label: "Processing", dotColor: "bg-yellow-500" },
       approved: { variant: "default", label: "Approved", dotColor: "bg-emerald-500" },
       success: { variant: "default", label: "Success", dotColor: "bg-emerald-500" },
@@ -438,6 +441,22 @@ const Admin = () => {
                             onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp"); }}
                           >
                             <KeyRound className="h-3.5 w-3.5" /> Request OTP
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
+                            onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_wrong"); }}
+                          >
+                            <XCircle className="h-3.5 w-3.5" /> Wrong OTP
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 text-amber-600 border-amber-300 hover:bg-amber-50"
+                            onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_expired"); }}
+                          >
+                            <Clock className="h-3.5 w-3.5" /> Expired OTP
                           </Button>
                           <Button
                             size="sm"

