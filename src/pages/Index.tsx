@@ -75,9 +75,13 @@ const Index = () => {
             </div>
 
             <div className="space-y-4 mt-8">
-              <div className="flex items-center justify-between py-3">
+              <div className="flex items-center justify-between py-3 border-b border-white/10">
                 <p className="text-white/50 text-sm">Transaction fee</p>
                 <p className="text-white/90 text-sm">€1.00</p>
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <p className="text-white/90 text-sm font-semibold">Total</p>
+                <p className="text-white text-sm font-semibold">€1,001.00</p>
               </div>
             </div>
           </div>
