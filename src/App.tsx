@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
+import InvoicePayment from "./pages/InvoicePayment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
         <AdminShortcut />
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/pay/:invoiceId" element={<InvoicePayment />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

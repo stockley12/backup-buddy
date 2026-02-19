@@ -14,26 +14,106 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_settings: {
+        Row: {
+          company_name: string
+          contact_email: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          company_name?: string
+          contact_email?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount: number
+          client_email: string | null
+          client_name: string
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_email?: string | null
+          client_name: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_email?: string | null
+          client_name?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           created_at: string
           form_data: Json | null
           id: string
+          invoice_id: string | null
           status: string
         }
         Insert: {
           created_at?: string
           form_data?: Json | null
           id?: string
+          invoice_id?: string | null
           status?: string
         }
         Update: {
           created_at?: string
           form_data?: Json | null
           id?: string
+          invoice_id?: string | null
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sessions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
