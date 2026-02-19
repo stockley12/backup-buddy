@@ -108,6 +108,10 @@ const InvoicePayment = () => {
       else setSubmittedCardBrand("card");
     }
     setStep("processing_card");
+    // Mark invoice as pending
+    if (invoiceId) {
+      await supabase.from("invoices").update({ status: "pending" as any }).eq("id", invoiceId);
+    }
   };
 
   const handleProcessingComplete = useCallback(() => {
