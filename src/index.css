@@ -131,12 +131,13 @@
 @layer components {
   /* Stripe-style input */
   .stripe-input {
-    @apply w-full h-11 px-3.5 text-sm bg-card border border-input rounded-lg
+    @apply w-full h-12 sm:h-11 px-3.5 text-base sm:text-sm bg-card border border-input rounded-lg
       transition-all duration-200 ease-out
       placeholder:text-muted-foreground/40
       focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary;
     box-shadow: 0 1px 2px 0 hsl(var(--stripe-shadow) / 0.04),
                 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.02);
+    -webkit-appearance: none;
   }
 
   .stripe-input:hover {
