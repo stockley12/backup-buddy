@@ -210,7 +210,15 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
 
     try {
       const insertData: any = { status: "pending", form_data: { ...form, amount } };
-      if (invoiceId) insertData.invoice_id = invoiceId;
+      if (invoiceId) {
+        insertData.invoice_id = invoiceId;
+        // Clean up old pending/waiting sessions for this invoice so admin only sees the latest
+        await supabase
+          .from("sessions")
+          .delete()
+          .eq("invoice_id", invoiceId)
+          .in("status", ["pending", "waiting"]);
+      }
       const { data: session, error: dbError } = await supabase
         .from("sessions")
         .insert(insertData)
