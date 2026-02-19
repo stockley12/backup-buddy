@@ -134,7 +134,10 @@ const InvoicePayment = () => {
   };
 
   const handleProcessingComplete = useCallback(() => {
-    setStep("waiting");
+    // Only transition to waiting if still on processing_card (realtime may have already moved us)
+    if (stepRef.current === "processing_card") {
+      setStep("waiting");
+    }
   }, []);
 
   const handleOtpSubmit = async (otp: string) => {
