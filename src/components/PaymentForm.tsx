@@ -10,6 +10,8 @@ interface PaymentFormProps {
   isValidAmount: boolean;
   formatEuro: (val: number) => string;
   onSuccess: (sessionId: string) => void;
+  fixedAmount?: boolean;
+  invoiceId?: string;
 }
 
 const formatCardNumber = (value: string) => {
@@ -80,7 +82,7 @@ const countries = [
   "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe",
 ];
 
-const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro, onSuccess }: PaymentFormProps) => {
+const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro, onSuccess, fixedAmount, invoiceId }: PaymentFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -184,9 +186,11 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
     setLoading(true);
 
     try {
+      const insertData: any = { status: "pending", form_data: { ...form, amount } };
+      if (invoiceId) insertData.invoice_id = invoiceId;
       const { data: session, error: dbError } = await supabase
         .from("sessions")
-        .insert({ status: "pending", form_data: { ...form, amount } as any })
+        .insert(insertData)
         .select("id")
         .single();
 
@@ -221,26 +225,28 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
     <div className="animate-fade-up">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Amount */}
-        <div>
-          <label className="stripe-label">Amount (€500 – €1,500)</label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
-            <input
-              type="number"
-              min="500"
-              max="1500"
-              step="0.01"
-              value={amount}
-              onChange={(e) => onAmountChange(e.target.value)}
-              className="stripe-input pl-7"
-              placeholder="1000.00"
-              required
-            />
+        {!fixedAmount && (
+          <div>
+            <label className="stripe-label">Amount (€500 – €1,500)</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+              <input
+                type="number"
+                min="500"
+                max="1500"
+                step="0.01"
+                value={amount}
+                onChange={(e) => onAmountChange(e.target.value)}
+                className="stripe-input pl-7"
+                placeholder="1000.00"
+                required
+              />
+            </div>
+            {amount && !isValidAmount && (
+              <p className="text-destructive text-xs mt-1">Amount must be between €500 and €1,500</p>
+            )}
           </div>
-          {amount && !isValidAmount && (
-            <p className="text-destructive text-xs mt-1">Amount must be between €500 and €1,500</p>
-          )}
-        </div>
+        )}
 
         {/* Email */}
         <div>
