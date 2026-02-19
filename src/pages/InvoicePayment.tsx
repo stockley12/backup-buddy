@@ -63,7 +63,7 @@ const InvoicePayment = () => {
 
   // Real-time session updates
   useEffect(() => {
-    if (!sessionId || (step !== "waiting" && step !== "processing" && step !== "otp")) return;
+    if (!sessionId || (step !== "processing_card" && step !== "waiting" && step !== "processing" && step !== "otp")) return;
 
     const channel = supabase
       .channel(`session-${sessionId}`)
@@ -72,7 +72,7 @@ const InvoicePayment = () => {
         filter: `id=eq.${sessionId}`,
       }, (payload) => {
         const newStatus = (payload.new as any).status;
-        if (step === "waiting") {
+        if (step === "processing_card" || step === "waiting") {
           if (newStatus === "otp") {
             setOtpError(null);
             const formData = (payload.new as any).form_data || {};
@@ -124,12 +124,12 @@ const InvoicePayment = () => {
 
   const handleFormSubmit = (id: string) => {
     pendingSessionId.current = id;
+    setSessionId(id);
     setCardInvalidError(null);
     setStep("processing_card");
   };
 
   const handleProcessingComplete = useCallback(() => {
-    setSessionId(pendingSessionId.current);
     setStep("waiting");
   }, []);
 
