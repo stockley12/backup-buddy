@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Lock, ShieldCheck } from "lucide-react";
+import StripeWordmark from "./StripeWordmark";
 
 interface ProcessingOverlayProps {
   onComplete: () => void;
@@ -38,17 +39,17 @@ const ProcessingOverlay = ({ onComplete }: ProcessingOverlayProps) => {
 
   return (
     <div className="animate-stripe-slide">
-      <div className="flex flex-col items-center text-center py-12">
-        {/* Animated spinner with lock */}
+      <div className="flex flex-col items-center text-center py-10">
+        {/* Animated circular progress with lock */}
         <div className="relative mb-8">
           <svg className="h-20 w-20 animate-spin-slow" viewBox="0 0 80 80">
-            <circle cx="40" cy="40" r="36" fill="none" stroke="hsl(var(--muted) / 0.2)" strokeWidth="3" />
+            <circle cx="40" cy="40" r="36" fill="none" stroke="hsl(var(--muted) / 0.15)" strokeWidth="3" />
             <circle cx="40" cy="40" r="36" fill="none" stroke="hsl(var(--primary))" strokeWidth="3"
               strokeDasharray={`${progress * 2.26} 226`} strokeLinecap="round"
               className="transition-all duration-700 ease-out" style={{ transform: "rotate(-90deg)", transformOrigin: "center" }} />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-primary/8 border border-primary/10 flex items-center justify-center">
               <Lock className="h-5 w-5 text-primary" />
             </div>
           </div>
@@ -64,9 +65,9 @@ const ProcessingOverlay = ({ onComplete }: ProcessingOverlayProps) => {
               i < currentStep ? "text-muted-foreground/60" : i === currentStep ? "text-foreground font-medium" : "text-muted-foreground/30"
             }`}>
               <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] shrink-0 transition-all duration-300 ${
-                i < currentStep ? "bg-emerald-500/15 text-emerald-600" :
-                i === currentStep ? "bg-primary/15 text-primary ring-2 ring-primary/20" :
-                "bg-muted/50 text-muted-foreground/30"
+                i < currentStep ? "bg-success/15 text-success" :
+                i === currentStep ? "bg-primary/10 text-primary ring-2 ring-primary/15" :
+                "bg-muted/40 text-muted-foreground/30"
               }`}>
                 {i < currentStep ? "✓" : step.icon}
               </div>
@@ -81,9 +82,18 @@ const ProcessingOverlay = ({ onComplete }: ProcessingOverlayProps) => {
             style={{ width: `${progress}%`, background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))" }} />
         </div>
 
-        <div className="flex items-center gap-1.5 mt-6 text-[11px] text-muted-foreground/40">
-          <ShieldCheck className="h-3 w-3" />
-          <span>256-bit SSL encrypted connection</span>
+        {/* Stripe trust footer */}
+        <div className="flex flex-col items-center gap-2 pt-6">
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-500/60" />
+            <span>256-bit SSL encrypted connection</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Lock className="h-3 w-3 text-muted-foreground/35" />
+            <p className="text-[11px] text-muted-foreground/45 flex items-center gap-1">
+              Powered by <StripeWordmark className="h-3.5 text-muted-foreground/55" />
+            </p>
+          </div>
         </div>
       </div>
     </div>
