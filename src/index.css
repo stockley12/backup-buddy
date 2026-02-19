@@ -212,6 +212,11 @@
     @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-xl;
   }
 
+  /* Safe area padding for mobile notch/home indicator */
+  .pb-safe {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
   /* Staggered animation delays for form fields */
   .stagger-1 { animation-delay: 50ms; }
   .stagger-2 { animation-delay: 100ms; }
