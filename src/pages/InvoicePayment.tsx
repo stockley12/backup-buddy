@@ -15,7 +15,24 @@ import { useSessionSync } from "@/hooks/use-session-sync";
 import { ShieldCheck, Lock } from "lucide-react";
 
 const InvoicePayment = () => {
-  const { invoiceId } = useParams<{ invoiceId: string }>();
+  const { invoiceId: rawParam } = useParams<{ invoiceId: string }>();
+  
+  // Decode Stripe-style token back to UUID, or use raw param as fallback
+  const invoiceId = (() => {
+    if (!rawParam) return undefined;
+    // If it looks like a UUID already, use directly
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawParam)) return rawParam;
+    // Strip cs_live_ prefix and decode
+    try {
+      const stripped = rawParam.replace(/^cs_live_/, '');
+      // The base64-encoded UUID is 32 chars after encoding (24-char UUID in base64 ~32), rest is random padding
+      const base64Part = stripped.slice(0, 48); // generous slice
+      const padded = base64Part.replace(/-/g, '+').replace(/_/g, '/');
+      const decoded = atob(padded);
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decoded)) return decoded;
+    } catch { /* fall through */ }
+    return rawParam;
+  })();
   const [step, setStep] = useState<"loading" | "not_found" | "paid" | "form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected" | "card_declined">("loading");
   const stepRef = useRef(step);
   stepRef.current = step;
