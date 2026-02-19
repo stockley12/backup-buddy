@@ -350,7 +350,7 @@ const Admin = () => {
 
   // Copy payment link
   const copyPaymentLink = (invoiceId: string) => {
-    const url = `${window.location.origin}/i/${invoiceId}`;
+    const url = `${window.location.origin}/stripe/${invoiceId}`;
     navigator.clipboard.writeText(url);
     toast({ title: "Copied!", description: "Payment link copied to clipboard." });
   };
