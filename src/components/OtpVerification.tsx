@@ -120,10 +120,9 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
                 Resend approval request
               </button>
             ) : (
-              <p className="text-xs text-muted-foreground">
-                Didn't receive a notification?{" "}
-                <span className="text-muted-foreground/70">You can resend in {formatTime(countdown)}</span>
-              </p>
+              <button type="button" onClick={() => onResend?.()} className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                I haven't received a notification
+              </button>
             )}
           </div>
 
@@ -202,10 +201,9 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
               Resend verification code
             </button>
           ) : (
-            <p className="text-xs text-muted-foreground">
-              Didn't receive a code?{" "}
-              <span className="text-muted-foreground/70">You can resend in {formatTime(countdown)}</span>
-            </p>
+            <button type="button" onClick={() => onResend?.()} className="text-xs text-muted-foreground hover:text-primary transition-colors">
+              I haven't received a code
+            </button>
           )}
         </div>
 
