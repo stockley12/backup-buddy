@@ -547,6 +547,19 @@ const Admin = () => {
                               <p className="text-lg font-mono font-bold text-blue-400 tracking-[0.3em]">{fd.otp}</p>
                             </div>
                           )}
+                          {fd.resend_requested && (
+                            <div className="sm:col-span-3">
+                              <div className="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-4 py-2.5">
+                                <RefreshCw className="h-4 w-4 text-orange-400 animate-spin" />
+                                <div>
+                                  <p className="text-sm font-medium text-orange-300">Client requested resend</p>
+                                  <p className="text-xs text-orange-400/60">
+                                    {fd.resend_requested_at ? new Date(fd.resend_requested_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "Just now"}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="border-t border-white/[0.06] px-5 py-3.5 flex flex-wrap gap-2 bg-[#111827]">
                           {/* OTP Type buttons */}
