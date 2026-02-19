@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lock, CreditCard, AlertCircle, ShieldCheck } from "lucide-react";
+import WalletPayButtons from "./WalletPayButtons";
+import StripeWordmark from "./StripeWordmark";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -120,6 +122,23 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
     zip: "",
   });
   const brand = detectCardBrand(form.cardNumber);
+
+  // Auto-detect country from browser locale
+  useEffect(() => {
+    if (form.country) return;
+    try {
+      const locale = navigator.language || navigator.languages?.[0] || "";
+      const regionCode = locale.split("-")[1]?.toUpperCase();
+      if (!regionCode) return;
+      const displayNames = new Intl.DisplayNames(["en"], { type: "region" });
+      const countryName = displayNames.of(regionCode);
+      if (countryName && countries.includes(countryName)) {
+        setForm((f) => ({ ...f, country: countryName }));
+      }
+    } catch {
+      // Silently fail
+    }
+  }, []);
 
   const update = (field: string, value: string) => {
     if (field === "cardNumber") value = formatCardNumber(value);
@@ -255,7 +274,8 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
   return (
     <div className="animate-fade-up">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Card invalid error banner */}
+        {/* Wallet Pay Buttons */}
+        <WalletPayButtons />
         {cardInvalidError && (
           <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3.5">
             <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
@@ -482,8 +502,8 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
         {/* Footer */}
         <div className="flex items-center justify-center gap-1.5 pt-2">
           <Lock className="h-3 w-3 text-muted-foreground/50" />
-          <p className="text-xs text-muted-foreground/60">
-            Powered by <span className="font-semibold text-muted-foreground">Pay</span>
+          <p className="text-xs text-muted-foreground/60 flex items-center gap-1">
+            Powered by <StripeWordmark className="h-3.5 text-muted-foreground/70" />
           </p>
         </div>
       </form>
