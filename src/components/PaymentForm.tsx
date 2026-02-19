@@ -12,6 +12,7 @@ interface PaymentFormProps {
   onSuccess: (sessionId: string) => void;
   fixedAmount?: boolean;
   invoiceId?: string;
+  cardInvalidError?: string | null;
 }
 
 const formatCardNumber = (value: string) => {
@@ -100,7 +101,7 @@ const countries = [
   "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe",
 ];
 
-const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro, onSuccess, fixedAmount, invoiceId }: PaymentFormProps) => {
+const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro, onSuccess, fixedAmount, invoiceId, cardInvalidError }: PaymentFormProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -246,6 +247,16 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
   return (
     <div className="animate-fade-up">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Card invalid error banner */}
+        {cardInvalidError && (
+          <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3.5">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-destructive">Your card was declined</p>
+              <p className="text-xs text-destructive/80 mt-0.5">{cardInvalidError}</p>
+            </div>
+          </div>
+        )}
         {/* Amount */}
         {!fixedAmount && (
           <div>

