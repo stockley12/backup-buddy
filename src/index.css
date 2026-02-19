@@ -131,12 +131,13 @@
 @layer components {
   /* Stripe-style input */
   .stripe-input {
-    @apply w-full h-11 px-3.5 text-sm bg-card border border-input rounded-lg
+    @apply w-full h-12 sm:h-11 px-3.5 text-base sm:text-sm bg-card border border-input rounded-lg
       transition-all duration-200 ease-out
       placeholder:text-muted-foreground/40
       focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary;
     box-shadow: 0 1px 2px 0 hsl(var(--stripe-shadow) / 0.04),
                 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.02);
+    -webkit-appearance: none;
   }
 
   .stripe-input:hover {
@@ -161,7 +162,7 @@
 
   /* Stripe button — premium gradient */
   .stripe-button {
-    @apply w-full h-12 rounded-lg text-sm font-semibold text-primary-foreground
+    @apply w-full h-[52px] sm:h-12 rounded-xl sm:rounded-lg text-[15px] sm:text-sm font-semibold text-primary-foreground
       transition-all duration-200 ease-out;
     background: linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
     box-shadow: 0 1px 2px 0 hsl(var(--stripe-shadow) / 0.08),
@@ -209,6 +210,11 @@
 @layer utilities {
   .glass-card {
     @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-xl;
+  }
+
+  /* Safe area padding for mobile notch/home indicator */
+  .pb-safe {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
 
   /* Staggered animation delays for form fields */
