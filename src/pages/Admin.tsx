@@ -357,6 +357,7 @@ const Admin = () => {
 
   const getInvoiceStatusBadge = (status: string) => {
     if (status === "paid") return <Badge className="bg-emerald-600 text-white border-0 gap-1"><CheckCircle className="h-3 w-3" /> Paid</Badge>;
+    if (status === "pending") return <Badge className="bg-yellow-600 text-white border-0 gap-1"><Clock className="h-3 w-3" /> Pending</Badge>;
     return <Badge variant="outline" className="gap-1 border-yellow-500/30 text-yellow-400"><Clock className="h-3 w-3" /> Unpaid</Badge>;
   };
 
