@@ -41,19 +41,6 @@ const InvoicePayment = () => {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Reset to form when user comes back online after being offline
-  useEffect(() => {
-    const handleOnline = () => {
-      if (stepRef.current !== "form" && stepRef.current !== "success" && stepRef.current !== "paid" && stepRef.current !== "loading" && stepRef.current !== "not_found") {
-        setStep("form");
-        setSessionId(null);
-        setOtpError(null);
-        setCardInvalidError(null);
-      }
-    };
-    window.addEventListener("online", handleOnline);
-    return () => window.removeEventListener("online", handleOnline);
-  }, []);
 
   // Load invoice and business settings
   useEffect(() => {
