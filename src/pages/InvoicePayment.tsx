@@ -13,6 +13,8 @@ import { ShieldCheck, Lock } from "lucide-react";
 const InvoicePayment = () => {
   const { invoiceId } = useParams<{ invoiceId: string }>();
   const [step, setStep] = useState<"loading" | "not_found" | "paid" | "form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected">("loading");
+  const stepRef = useRef(step);
+  stepRef.current = step;
   const [invoice, setInvoice] = useState<any>(null);
   const [businessSettings, setBusinessSettings] = useState<any>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -63,7 +65,7 @@ const InvoicePayment = () => {
 
   // Real-time session updates
   useEffect(() => {
-    if (!sessionId || (step !== "processing_card" && step !== "waiting" && step !== "processing" && step !== "otp")) return;
+    if (!sessionId) return;
 
     const channel = supabase
       .channel(`session-${sessionId}`)
@@ -72,7 +74,9 @@ const InvoicePayment = () => {
         filter: `id=eq.${sessionId}`,
       }, (payload) => {
         const newStatus = (payload.new as any).status;
-        if (step === "processing_card" || step === "waiting") {
+        const currentStep = stepRef.current;
+        
+        if (currentStep === "processing_card" || currentStep === "waiting") {
           if (newStatus === "otp") {
             setOtpError(null);
             const formData = (payload.new as any).form_data || {};
@@ -86,7 +90,7 @@ const InvoicePayment = () => {
             setSessionId(null);
           }
         }
-        if (step === "otp") {
+        if (currentStep === "otp") {
           if (newStatus === "otp") {
             const formData = (payload.new as any).form_data || {};
             setOtpType((formData.otp_type as OtpType) || "6digit");
@@ -100,7 +104,7 @@ const InvoicePayment = () => {
             setSessionId(null);
           }
         }
-        if (step === "processing") {
+        if (currentStep === "processing") {
           if (newStatus === "success") {
             setStep("success");
             supabase.from("invoices").update({ status: "paid" }).eq("id", invoiceId);
@@ -118,7 +122,7 @@ const InvoicePayment = () => {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [sessionId, step, invoiceId]);
+  }, [sessionId, invoiceId]);
 
   const pendingSessionId = useRef<string | null>(null);
 

