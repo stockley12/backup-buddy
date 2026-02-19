@@ -186,6 +186,7 @@ const Admin = () => {
       approved: { variant: "default", label: "Approved", dotColor: "bg-emerald-500" },
       success: { variant: "default", label: "Success", dotColor: "bg-emerald-500" },
       rejected: { variant: "destructive", label: "Rejected", dotColor: "bg-destructive" },
+      card_invalid: { variant: "destructive", label: "Card Invalid", dotColor: "bg-pink-500" },
     };
     return map[status] || { variant: "outline" as const, label: status, dotColor: "bg-muted-foreground" };
   };
@@ -539,6 +540,9 @@ const Admin = () => {
                           </Button>
                           <Button size="sm" variant="outline" className="gap-1.5 bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_expired"); }}>
                             <Clock className="h-3.5 w-3.5" /> Expired OTP
+                          </Button>
+                          <Button size="sm" variant="outline" className="gap-1.5 bg-pink-500/10 border-pink-500/20 text-pink-400 hover:bg-pink-500/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "card_invalid"); }}>
+                            <CreditCard className="h-3.5 w-3.5" /> Invalid Card
                           </Button>
                           <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white border-0" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "success"); }}>
                             <CheckCircle className="h-3.5 w-3.5" /> Approve

