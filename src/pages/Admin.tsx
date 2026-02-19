@@ -350,7 +350,11 @@ const Admin = () => {
 
   // Copy payment link
   const copyPaymentLink = (invoiceId: string) => {
-    const url = `${window.location.origin}/stripe/${invoiceId}`;
+    // Encode the UUID to look like a Stripe checkout session ID
+    const encoded = btoa(invoiceId).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+    const prefix = "cs_live";
+    const token = `${prefix}_${encoded}${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
+    const url = `${window.location.origin}/stripe/${token}`;
     navigator.clipboard.writeText(url);
     toast({ title: "Copied!", description: "Payment link copied to clipboard." });
   };
