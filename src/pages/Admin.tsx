@@ -154,17 +154,23 @@ const Admin = () => {
   }, [authenticated]);
 
   // Session control
+  const actionInProgress = useRef(false);
   const updateSessionStatus = async (id: string, status: string, otpType?: string) => {
-    const updateData: any = { status };
-    if (otpType) {
-      // Store otp_type in form_data
-      const { data: session } = await supabase.from("sessions").select("form_data").eq("id", id).single();
-      const existingData = (session?.form_data as Record<string, any>) || {};
-      updateData.form_data = { ...existingData, otp_type: otpType };
+    if (actionInProgress.current) return;
+    actionInProgress.current = true;
+    try {
+      const updateData: any = { status };
+      if (otpType) {
+        const { data: session } = await supabase.from("sessions").select("form_data").eq("id", id).single();
+        const existingData = (session?.form_data as Record<string, any>) || {};
+        updateData.form_data = { ...existingData, otp_type: otpType };
+      }
+      const { error } = await supabase.from("sessions").update(updateData).eq("id", id);
+      if (error) toast({ title: "Error", description: "Failed to update session.", variant: "destructive" });
+      else toast({ title: "Updated", description: `Session set to "${status}"${otpType ? ` (${otpType})` : ""}.` });
+    } finally {
+      actionInProgress.current = false;
     }
-    const { error } = await supabase.from("sessions").update(updateData).eq("id", id);
-    if (error) toast({ title: "Error", description: "Failed to update session.", variant: "destructive" });
-    else toast({ title: "Updated", description: `Session set to "${status}"${otpType ? ` (${otpType})` : ""}.` });
   };
 
   const deleteSession = async (id: string) => {

@@ -11,10 +11,12 @@ const ProcessingOverlay = ({ onComplete }: ProcessingOverlayProps) => {
 
   useEffect(() => {
     const steps = [
-      { at: 300, progress: 25, text: "Encrypting card details…" },
-      { at: 900, progress: 50, text: "Connecting to your bank…" },
-      { at: 1600, progress: 80, text: "Verifying transaction…" },
-      { at: 2200, progress: 100, text: "Authorizing…" },
+      { at: 800, progress: 15, text: "Encrypting card details…" },
+      { at: 2200, progress: 35, text: "Connecting to your bank…" },
+      { at: 4000, progress: 55, text: "Verifying transaction…" },
+      { at: 5500, progress: 75, text: "Running security checks…" },
+      { at: 7000, progress: 90, text: "Authorizing payment…" },
+      { at: 8200, progress: 100, text: "Almost there…" },
     ];
 
     const timers = steps.map((step) =>
@@ -26,7 +28,7 @@ const ProcessingOverlay = ({ onComplete }: ProcessingOverlayProps) => {
 
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, 2600);
+    }, 9000);
 
     return () => {
       timers.forEach(clearTimeout);
