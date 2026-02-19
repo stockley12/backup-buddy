@@ -74,7 +74,7 @@ const Admin = () => {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [invoiceForm, setInvoiceForm] = useState({
-    client_name: "", client_email: "", description: "", amount: "", due_date: "",
+    client_name: "", client_email: "", description: "", amount: "", due_date: "", invoice_number: "",
   });
   const [invoiceLoading, setInvoiceLoading] = useState(false);
 
@@ -289,12 +289,12 @@ const Admin = () => {
         description: invoiceForm.description || null,
         amount: parseFloat(invoiceForm.amount),
         due_date: invoiceForm.due_date || null,
-        invoice_number: "TEMP", // trigger will override with unique number
+        invoice_number: invoiceForm.invoice_number || "TEMP",
       }).select().single();
 
       if (error) throw error;
       toast({ title: "Invoice created", description: `${data.invoice_number} for ${formatEuro(parseFloat(invoiceForm.amount))}` });
-      setInvoiceForm({ client_name: "", client_email: "", description: "", amount: "", due_date: "" });
+      setInvoiceForm({ client_name: "", client_email: "", description: "", amount: "", due_date: "", invoice_number: "" });
       setShowInvoiceForm(false);
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Failed to create invoice.", variant: "destructive" });
@@ -631,6 +631,10 @@ const Admin = () => {
             <div className="bg-[#111827] rounded-xl border border-blue-500/20 p-6 shadow-lg shadow-blue-500/5">
               <h3 className="text-white font-semibold mb-4">Create Invoice</h3>
               <form onSubmit={handleCreateInvoice} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1 block">Invoice Number</label>
+                  <Input value={invoiceForm.invoice_number} onChange={(e) => setInvoiceForm(f => ({ ...f, invoice_number: e.target.value }))} placeholder="INV20260001 (auto if empty)" className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                </div>
                 <div>
                   <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1 block">Client Name *</label>
                   <Input value={invoiceForm.client_name} onChange={(e) => setInvoiceForm(f => ({ ...f, client_name: e.target.value }))} placeholder="John Doe" required className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
