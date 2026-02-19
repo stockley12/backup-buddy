@@ -256,10 +256,10 @@ const InvoicePayment = () => {
             <span>256-bit SSL Encrypted · PCI DSS Compliant</span>
           </div>
           <div className="flex items-center gap-4 text-white/30 text-xs">
-            <span>Powered by <span className="font-semibold text-white/50">{companyName}</span></span>
+            <span>Powered by <span className="font-semibold text-white/50">Stripe</span></span>
             <span>·</span>
-            <a href="#" className="hover:text-white/50 transition-colors">Terms</a>
-            <a href="#" className="hover:text-white/50 transition-colors">Privacy</a>
+            <a href="https://stripe.com/legal/consumer" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors">Terms</a>
+            <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors">Privacy</a>
           </div>
         </div>
       </div>
