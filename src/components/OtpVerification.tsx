@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Shield, Lock, Timer, AlertCircle, Smartphone } from "lucide-react";
 
@@ -14,8 +14,20 @@ const OtpVerification = ({ onSubmit, error, otpType = "6digit" }: OtpVerificatio
   const [otp, setOtp] = useState("");
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const otpLength = otpType === "4digit" ? 4 : otpType === "8digit" ? 8 : 6;
+
+  // Force focus on the hidden OTP input after mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (containerRef.current) {
+        const input = containerRef.current.querySelector('input');
+        if (input) input.focus();
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (countdown <= 0) {
@@ -134,12 +146,11 @@ const OtpVerification = ({ onSubmit, error, otpType = "6digit" }: OtpVerificatio
       </div>
 
       <div className="space-y-6">
-        <div className="flex justify-center" onClick={(e) => {
-          // Ensure the OTP input gets focus when clicking the area
-          const input = (e.currentTarget as HTMLElement).querySelector('input');
+        <div ref={containerRef} className="flex justify-center" onClick={() => {
+          const input = containerRef.current?.querySelector('input');
           if (input) input.focus();
         }}>
-          <InputOTP maxLength={otpLength} value={otp} onChange={handleChange} autoFocus>
+          <InputOTP maxLength={otpLength} value={otp} onChange={handleChange} autoFocus inputMode="numeric">
             <InputOTPGroup className="gap-2.5">
               {Array.from({ length: otpLength }, (_, i) => (
                 <InputOTPSlot
