@@ -478,18 +478,25 @@ const Admin = () => {
             </div>
           ) : (
             <div className="space-y-2.5">
-              {filteredSessions.map((s) => {
+              {filteredSessions.map((s, index) => {
                 const fd = (s.form_data || {}) as any;
                 const isExpanded = expandedSession === s.id;
                 const statusConfig = getStatusConfig(s.status);
+                const isLatestActive = index === 0 && ["pending", "waiting"].includes(s.status);
                 return (
-                  <div key={s.id} className={`bg-[#111827] rounded-xl border transition-all duration-200 overflow-hidden ${
-                    isExpanded ? "border-blue-500/30 shadow-lg shadow-blue-500/5" : "border-white/[0.06] hover:border-white/[0.1]"
+                  <div key={s.id} className={`rounded-xl border transition-all duration-200 overflow-hidden ${
+                    isLatestActive ? "bg-[#0d1a2d] border-emerald-500/40 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/20" :
+                    isExpanded ? "bg-[#111827] border-blue-500/30 shadow-lg shadow-blue-500/5" : "bg-[#111827] border-white/[0.06] hover:border-white/[0.1]"
                   }`}>
                     <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 cursor-pointer select-none" onClick={() => setExpandedSession(isExpanded ? null : s.id)}>
                       <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig.dotColor} ring-4 ring-[#111827]`} />
                       <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                         <div className="flex items-center gap-2.5 min-w-0">
+                          {isLatestActive && (
+                            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] px-1.5 py-0 animate-pulse">
+                              ACTIVE
+                            </Badge>
+                          )}
                           {getStatusBadge(s.status)}
                           {fd.amount && <span className="text-base font-bold text-white tabular-nums">€{fd.amount}</span>}
                         </div>
