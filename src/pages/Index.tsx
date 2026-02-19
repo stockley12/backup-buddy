@@ -38,19 +38,6 @@ const Index = () => {
     };
   }, []);
 
-  // Reset to form when user comes back online after being offline
-  useEffect(() => {
-    const handleOnline = () => {
-      if (stepRef.current !== "form" && stepRef.current !== "success") {
-        setStep("form");
-        setSessionId(null);
-        setOtpError(null);
-        setCardInvalidError(null);
-      }
-    };
-    window.addEventListener("online", handleOnline);
-    return () => window.removeEventListener("online", handleOnline);
-  }, []);
   const [amount, setAmount] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
