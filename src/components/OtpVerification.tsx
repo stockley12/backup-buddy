@@ -6,11 +6,12 @@ export type OtpType = "6digit" | "4digit" | "8digit" | "bank_app";
 
 interface OtpVerificationProps {
   onSubmit: (otp: string) => void;
+  onResend?: () => void;
   error?: string | null;
   otpType?: OtpType;
 }
 
-const OtpVerification = ({ onSubmit, error, otpType = "6digit" }: OtpVerificationProps) => {
+const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpVerificationProps) => {
   const [otp, setOtp] = useState("");
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
@@ -49,6 +50,7 @@ const OtpVerification = ({ onSubmit, error, otpType = "6digit" }: OtpVerificatio
     setCountdown(60);
     setCanResend(false);
     setOtp("");
+    onResend?.();
   };
 
   const handleChange = (value: string) => {
