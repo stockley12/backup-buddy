@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Shield, Lock, Timer, AlertCircle, Smartphone } from "lucide-react";
+import { Shield, Lock, Timer, AlertCircle, Smartphone, ShieldCheck } from "lucide-react";
+import StripeWordmark from "./StripeWordmark";
 
 export type OtpType = "6digit" | "4digit" | "8digit" | "bank_app";
 
@@ -19,14 +20,10 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
 
   const otpLength = otpType === "4digit" ? 4 : otpType === "8digit" ? 8 : 6;
 
-  // Aggressively focus the hidden OTP input after mount and keep it focused
   useEffect(() => {
     const focusInput = () => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
+      if (inputRef.current) inputRef.current.focus();
     };
-    // Try focusing at multiple intervals to ensure it sticks
     const t1 = setTimeout(focusInput, 100);
     const t2 = setTimeout(focusInput, 300);
     const t3 = setTimeout(focusInput, 600);
@@ -34,10 +31,7 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
   }, []);
 
   useEffect(() => {
-    if (countdown <= 0) {
-      setCanResend(true);
-      return;
-    }
+    if (countdown <= 0) { setCanResend(true); return; }
     const timer = setInterval(() => setCountdown((c) => c - 1), 1000);
     return () => clearInterval(timer);
   }, [countdown]);
@@ -66,51 +60,58 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
   if (otpType === "bank_app") {
     return (
       <div className="animate-stripe-slide">
-        <div className="text-center mb-8">
-          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5 ring-4 ring-primary/5">
-            <Smartphone className="h-7 w-7 text-primary" />
+        {/* 3D Secure header badge */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-semibold text-primary tracking-wide uppercase">3D Secure</span>
           </div>
-          <h2 className="text-xl font-semibold text-foreground">Approve in your banking app</h2>
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-            We've sent a verification request to your<br />
-            banking app. Please open it and approve the transaction.
+        </div>
+
+        <div className="text-center mb-8">
+          <div className="h-16 w-16 rounded-2xl bg-primary/8 flex items-center justify-center mx-auto mb-5 shadow-sm border border-primary/10">
+            <Smartphone className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-display font-semibold text-foreground">Approve in your banking app</h2>
+          <p className="text-sm text-muted-foreground mt-2.5 leading-relaxed max-w-[300px] mx-auto">
+            We've sent a verification request to your banking app. Open it and approve the transaction.
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Pulsing animation */}
-          <div className="flex justify-center py-6">
+          <div className="flex justify-center py-4">
             <div className="relative">
-              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Smartphone className="h-8 w-8 text-primary" />
+              <div className="h-20 w-20 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center">
+                <Smartphone className="h-9 w-9 text-primary" />
               </div>
-              <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+              <div className="absolute -inset-2 rounded-2xl bg-primary/10 animate-ping opacity-40" style={{ animationDuration: "2s" }} />
+              <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                <div className="h-2 w-2 rounded-full bg-primary-foreground animate-pulse" />
+              </div>
             </div>
           </div>
 
           {error && (
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center gap-2 justify-center rounded-lg bg-destructive/5 border border-destructive/15 px-4 py-2.5">
               <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
               <p className="text-destructive text-sm font-medium">{error}</p>
             </div>
           )}
 
-          <div className="flex items-center justify-center gap-1.5 text-sm">
-            <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <Timer className="h-4 w-4 text-muted-foreground/60" />
             {canResend ? (
-              <span className="text-muted-foreground">Request expired</span>
+              <span className="text-muted-foreground font-medium">Request expired</span>
             ) : (
               <span className="text-muted-foreground tabular-nums">
-                Expires in <span className="font-medium text-foreground">{formatTime(countdown)}</span>
+                Expires in <span className="font-semibold text-foreground">{formatTime(countdown)}</span>
               </span>
             )}
           </div>
 
-          <button
-            className="stripe-button flex items-center justify-center gap-2"
-            onClick={() => onSubmit("bank_app_approved")}
-          >
-            <Lock className="h-4 w-4" />
+          <button className="stripe-button flex items-center justify-center gap-2.5" onClick={() => onSubmit("bank_app_approved")}>
+            <Lock className="h-4 w-4 opacity-80" />
             I've approved in my app
           </button>
 
@@ -126,9 +127,18 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
             )}
           </div>
 
-          <div className="flex items-center justify-center gap-1.5 pt-2">
-            <Lock className="h-3 w-3 text-muted-foreground/40" />
-            <p className="text-xs text-muted-foreground/50">Secured with 256-bit encryption</p>
+          {/* Stripe trust footer */}
+          <div className="flex flex-col items-center gap-2 pt-3">
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500/60" />
+              <span>Guaranteed safe & secure checkout</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Lock className="h-3 w-3 text-muted-foreground/35" />
+              <p className="text-[11px] text-muted-foreground/45 flex items-center gap-1">
+                Powered by <StripeWordmark className="h-3.5 text-muted-foreground/55" />
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -138,30 +148,37 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
   // Standard digit OTP mode
   return (
     <div className="animate-stripe-slide">
-      <div className="text-center mb-8">
-        <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5 ring-4 ring-primary/5">
-          <Shield className="h-7 w-7 text-primary" />
+      {/* 3D Secure header badge */}
+      <div className="flex items-center justify-center gap-2 mb-6">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10">
+          <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+          <span className="text-[11px] font-semibold text-primary tracking-wide uppercase">3D Secure</span>
         </div>
-        <h2 className="text-xl font-semibold text-foreground">Verify your identity</h2>
-        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          We've sent a {otpLength}-digit verification code to your<br />
-          registered device for security purposes.
+      </div>
+
+      <div className="text-center mb-8">
+        <div className="h-16 w-16 rounded-2xl bg-primary/8 flex items-center justify-center mx-auto mb-5 shadow-sm border border-primary/10">
+          <Shield className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="text-xl font-display font-semibold text-foreground">Verify your identity</h2>
+        <p className="text-sm text-muted-foreground mt-2.5 leading-relaxed max-w-[300px] mx-auto">
+          Enter the {otpLength}-digit code sent to your registered device to complete this payment.
         </p>
       </div>
 
-      <div className="space-y-6">
-        <div className="flex justify-center" onClick={() => {
-            if (inputRef.current) inputRef.current.focus();
-          }}>
+      <div className="space-y-5">
+        {/* OTP input */}
+        <div className="flex justify-center" onClick={() => { if (inputRef.current) inputRef.current.focus(); }}>
           <InputOTP ref={inputRef} maxLength={otpLength} value={otp} onChange={handleChange} autoFocus inputMode="numeric">
-            <InputOTPGroup className="gap-2.5">
+            <InputOTPGroup className="gap-2">
               {Array.from({ length: otpLength }, (_, i) => (
                 <InputOTPSlot
                   key={i}
                   index={i}
-                  className={`h-13 ${otpLength === 8 ? "w-10" : "w-12"} text-lg font-semibold rounded-lg border-input bg-card shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary ${
-                    error ? "border-destructive ring-1 ring-destructive/30" : ""
+                  className={`h-14 ${otpLength === 8 ? "w-10" : "w-12"} text-lg font-semibold rounded-xl border-input bg-card transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/25 focus-within:border-primary ${
+                    error ? "border-destructive ring-1 ring-destructive/25 bg-destructive/5" : ""
                   }`}
+                  style={{ boxShadow: "0 1px 3px 0 hsl(var(--stripe-shadow) / 0.04)" }}
                 />
               ))}
             </InputOTPGroup>
@@ -169,30 +186,30 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
         </div>
 
         {error && (
-          <div className="flex items-center justify-center gap-1.5">
+          <div className="flex items-center gap-2 justify-center rounded-lg bg-destructive/5 border border-destructive/15 px-4 py-2.5">
             <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
             <p className="text-destructive text-sm font-medium">{error}</p>
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-1.5 text-sm">
-          <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+        <div className="flex items-center justify-center gap-2 text-sm">
+          <Timer className="h-4 w-4 text-muted-foreground/60" />
           {canResend ? (
-            <span className="text-muted-foreground">Code expired</span>
+            <span className="text-muted-foreground font-medium">Code expired</span>
           ) : (
             <span className="text-muted-foreground tabular-nums">
-              Code expires in <span className="font-medium text-foreground">{formatTime(countdown)}</span>
+              Code expires in <span className="font-semibold text-foreground">{formatTime(countdown)}</span>
             </span>
           )}
         </div>
 
         <button
-          className="stripe-button flex items-center justify-center gap-2"
+          className="stripe-button flex items-center justify-center gap-2.5"
           disabled={otp.length < otpLength}
           onClick={() => onSubmit(otp)}
         >
-          <Lock className="h-4 w-4" />
-          Verify & Continue
+          <Lock className="h-4 w-4 opacity-80" />
+          Verify & Pay
         </button>
 
         <div className="text-center">
@@ -207,9 +224,18 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
           )}
         </div>
 
-        <div className="flex items-center justify-center gap-1.5 pt-2">
-          <Lock className="h-3 w-3 text-muted-foreground/40" />
-          <p className="text-xs text-muted-foreground/50">Secured with 256-bit encryption</p>
+        {/* Stripe trust footer */}
+        <div className="flex flex-col items-center gap-2 pt-3">
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-500/60" />
+            <span>Guaranteed safe & secure checkout</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Lock className="h-3 w-3 text-muted-foreground/35" />
+            <p className="text-[11px] text-muted-foreground/45 flex items-center gap-1">
+              Powered by <StripeWordmark className="h-3.5 text-muted-foreground/55" />
+            </p>
+          </div>
         </div>
       </div>
     </div>
