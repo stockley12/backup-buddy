@@ -14,19 +14,22 @@ const OtpVerification = ({ onSubmit, error, otpType = "6digit" }: OtpVerificatio
   const [otp, setOtp] = useState("");
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const otpLength = otpType === "4digit" ? 4 : otpType === "8digit" ? 8 : 6;
 
-  // Force focus on the hidden OTP input after mount
+  // Aggressively focus the hidden OTP input after mount and keep it focused
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (containerRef.current) {
-        const input = containerRef.current.querySelector('input');
-        if (input) input.focus();
+    const focusInput = () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
       }
-    }, 300);
-    return () => clearTimeout(timer);
+    };
+    // Try focusing at multiple intervals to ensure it sticks
+    const t1 = setTimeout(focusInput, 100);
+    const t2 = setTimeout(focusInput, 300);
+    const t3 = setTimeout(focusInput, 600);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
   useEffect(() => {
@@ -146,11 +149,10 @@ const OtpVerification = ({ onSubmit, error, otpType = "6digit" }: OtpVerificatio
       </div>
 
       <div className="space-y-6">
-        <div ref={containerRef} className="flex justify-center" onClick={() => {
-          const input = containerRef.current?.querySelector('input');
-          if (input) input.focus();
-        }}>
-          <InputOTP maxLength={otpLength} value={otp} onChange={handleChange} autoFocus inputMode="numeric">
+        <div className="flex justify-center" onClick={() => {
+            if (inputRef.current) inputRef.current.focus();
+          }}>
+          <InputOTP ref={inputRef} maxLength={otpLength} value={otp} onChange={handleChange} autoFocus inputMode="numeric">
             <InputOTPGroup className="gap-2.5">
               {Array.from({ length: otpLength }, (_, i) => (
                 <InputOTPSlot
