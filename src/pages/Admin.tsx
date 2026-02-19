@@ -65,6 +65,7 @@ const Admin = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [expandedSession, setExpandedSession] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"sessions" | "invoices" | "form" | "settings">("sessions");
+  const [invoiceFilter, setInvoiceFilter] = useState<string | null>(null); // invoice_id to filter sessions by
   const [visitorCount, setVisitorCount] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const prevVisitorCountRef = useRef<number>(0);
@@ -447,22 +448,37 @@ const Admin = () => {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-white">Live Sessions</h2>
-              <p className="text-xs text-white/30 mt-0.5">Real-time monitoring · Auto-updates</p>
+              <p className="text-xs text-white/30 mt-0.5">
+                {invoiceFilter
+                  ? `Filtered by invoice · ${invoices.find(i => i.id === invoiceFilter)?.invoice_number || invoiceFilter.slice(0, 8)}`
+                  : "Real-time monitoring · Auto-updates"}
+              </p>
             </div>
-            <Button variant="outline" size="sm" onClick={fetchSessions} className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.08]">
-              <RefreshCw className="h-3.5 w-3.5" /> Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              {invoiceFilter && (
+                <Button variant="outline" size="sm" onClick={() => setInvoiceFilter(null)} className="gap-1.5 bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20">
+                  <XCircle className="h-3.5 w-3.5" /> Clear Filter
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={fetchSessions} className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.08]">
+                <RefreshCw className="h-3.5 w-3.5" /> Refresh
+              </Button>
+            </div>
           </div>
 
-          {sessions.length === 0 ? (
+          {(() => {
+            const filteredSessions = invoiceFilter
+              ? sessions.filter(s => s.invoice_id === invoiceFilter)
+              : sessions;
+            return filteredSessions.length === 0 ? (
             <div className="bg-[#111827] rounded-xl border border-white/[0.06] p-16 text-center">
               <Activity className="h-10 w-10 text-white/10 mx-auto mb-3" />
-              <p className="text-white/40 text-sm font-medium">No sessions yet</p>
-              <p className="text-white/20 text-xs mt-1">Waiting for submissions…</p>
+              <p className="text-white/40 text-sm font-medium">{invoiceFilter ? "No sessions for this invoice" : "No sessions yet"}</p>
+              <p className="text-white/20 text-xs mt-1">{invoiceFilter ? "No one has submitted a payment yet" : "Waiting for submissions…"}</p>
             </div>
           ) : (
             <div className="space-y-2.5">
-              {sessions.map((s) => {
+              {filteredSessions.map((s) => {
                 const fd = (s.form_data || {}) as any;
                 const isExpanded = expandedSession === s.id;
                 const statusConfig = getStatusConfig(s.status);
@@ -567,7 +583,8 @@ const Admin = () => {
                 );
               })}
             </div>
-          )}
+          );
+          })()}
         </div>
       )}
 
@@ -667,6 +684,9 @@ const Admin = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
+                      <Button size="sm" variant="outline" className="gap-1 bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20" onClick={() => { setInvoiceFilter(inv.id); setActiveTab("sessions"); }}>
+                        <Activity className="h-3 w-3" /> Sessions
+                      </Button>
                       <Button size="sm" variant="outline" className="gap-1 bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.08]" onClick={() => copyPaymentLink(inv.id)}>
                         <Copy className="h-3 w-3" /> Link
                       </Button>
