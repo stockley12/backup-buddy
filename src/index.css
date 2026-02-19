@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -40,8 +40,8 @@
     --radius: 0.5rem;
 
     /* Stripe-specific tokens */
-    --stripe-bg: 231 20% 27%;
-    --stripe-bg-light: 228 24% 35%;
+    --stripe-bg: 228 22% 12%;
+    --stripe-bg-light: 228 20% 18%;
     --stripe-link: 228 45% 55%;
     --stripe-input-bg: 0 0% 100%;
     --stripe-input-border: 220 13% 84%;
@@ -91,8 +91,8 @@
     --input: 217 33% 17%;
     --ring: 228 76% 60%;
 
-    --stripe-bg: 231 20% 15%;
-    --stripe-bg-light: 228 24% 22%;
+    --stripe-bg: 228 22% 8%;
+    --stripe-bg-light: 228 20% 14%;
     --stripe-link: 228 76% 60%;
     --stripe-input-bg: 224 30% 12%;
     --stripe-input-border: 217 33% 22%;
@@ -122,76 +122,87 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  h1, h2, h3 {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  }
 }
 
 @layer components {
   /* Stripe-style input */
   .stripe-input {
-    @apply w-full h-11 px-3 text-sm bg-card border border-input rounded-md
-      transition-all duration-150 ease-in-out
-      placeholder:text-muted-foreground/50
-      focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary;
-    box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.04);
+    @apply w-full h-11 px-3.5 text-sm bg-card border border-input rounded-lg
+      transition-all duration-200 ease-out
+      placeholder:text-muted-foreground/40
+      focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary;
+    box-shadow: 0 1px 2px 0 hsl(var(--stripe-shadow) / 0.04),
+                0 1px 1px 0 hsl(var(--stripe-shadow) / 0.02);
   }
 
   .stripe-input:hover {
     @apply border-muted-foreground/30;
+    box-shadow: 0 1px 3px 0 hsl(var(--stripe-shadow) / 0.06),
+                0 1px 2px 0 hsl(var(--stripe-shadow) / 0.04);
   }
 
   /* Stripe grouped inputs */
   .stripe-input-group {
-    @apply rounded-md border border-input overflow-hidden;
-    box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.04);
+    @apply rounded-lg border border-input overflow-hidden;
+    box-shadow: 0 1px 2px 0 hsl(var(--stripe-shadow) / 0.04);
   }
 
   .stripe-input-group .stripe-input-row {
-    @apply w-full h-11 px-3 text-sm bg-card border-0
-      transition-all duration-150 ease-in-out
-      placeholder:text-muted-foreground/50
+    @apply w-full h-11 px-3.5 text-sm bg-card border-0
+      transition-all duration-200 ease-out
+      placeholder:text-muted-foreground/40
       focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-inset focus:z-10;
     box-shadow: none;
   }
 
-  /* Stripe button */
+  /* Stripe button — premium gradient */
   .stripe-button {
-    @apply w-full h-11 rounded-md text-sm font-semibold text-primary-foreground
-      transition-all duration-150 ease-in-out;
-    background: hsl(var(--primary));
-    box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.06),
-                0 2px 5px 0 hsl(var(--stripe-shadow) / 0.04),
-                inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
+    @apply w-full h-12 rounded-lg text-sm font-semibold text-primary-foreground
+      transition-all duration-200 ease-out;
+    background: linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
+    box-shadow: 0 1px 2px 0 hsl(var(--stripe-shadow) / 0.08),
+                0 4px 12px 0 hsl(var(--primary) / 0.2),
+                inset 0 1px 0 0 hsl(0 0% 100% / 0.12);
   }
 
   .stripe-button:hover {
-    filter: brightness(1.08);
-    box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.08),
-                0 3px 8px 0 hsl(var(--stripe-shadow) / 0.08),
-                inset 0 1px 0 0 hsl(0 0% 100% / 0.08);
+    filter: brightness(1.1);
+    box-shadow: 0 1px 2px 0 hsl(var(--stripe-shadow) / 0.1),
+                0 6px 16px 0 hsl(var(--primary) / 0.25),
+                inset 0 1px 0 0 hsl(0 0% 100% / 0.12);
+    transform: translateY(-0.5px);
   }
 
   .stripe-button:active {
     filter: brightness(0.95);
+    transform: translateY(0);
     box-shadow: 0 1px 1px 0 hsl(var(--stripe-shadow) / 0.08),
                 inset 0 1px 3px 0 hsl(var(--stripe-shadow) / 0.15);
   }
 
   .stripe-button:disabled {
-    @apply opacity-60 cursor-not-allowed;
+    @apply opacity-50 cursor-not-allowed;
     filter: none;
+    transform: none;
   }
 
   /* Stripe label */
   .stripe-label {
-    @apply block text-sm font-medium mb-1.5;
+    @apply block text-sm font-medium mb-2;
     color: hsl(var(--foreground));
+    letter-spacing: -0.01em;
   }
 
   /* Stripe card container */
   .stripe-card {
-    @apply bg-card rounded-xl p-6 sm:p-8;
-    box-shadow: 0 2px 4px 0 hsl(var(--stripe-shadow) / 0.04),
-                0 5px 15px 0 hsl(var(--stripe-shadow) / 0.06),
-                0 15px 35px 0 hsl(var(--stripe-shadow) / 0.08);
+    @apply bg-card rounded-2xl p-6 sm:p-8;
+    box-shadow: 0 2px 4px 0 hsl(var(--stripe-shadow) / 0.03),
+                0 8px 24px 0 hsl(var(--stripe-shadow) / 0.06),
+                0 20px 48px 0 hsl(var(--stripe-shadow) / 0.06);
   }
 }
 
@@ -199,4 +210,12 @@
   .glass-card {
     @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-xl;
   }
+
+  /* Staggered animation delays for form fields */
+  .stagger-1 { animation-delay: 50ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 150ms; }
+  .stagger-4 { animation-delay: 200ms; }
+  .stagger-5 { animation-delay: 250ms; }
+  .stagger-6 { animation-delay: 300ms; }
 }

