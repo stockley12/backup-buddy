@@ -300,7 +300,21 @@ const InvoicePayment = () => {
           {step === "waiting" && <WaitingScreen amount={formatEuro(total)} />}
           {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} onResend={handleOtpResend} error={otpError} otpType={otpType} />}
           {step === "processing" && <WaitingScreen amount={formatEuro(total)} />}
-          {step === "success" && <PaymentSuccess amount={formatEuro(total)} email={submittedEmail} cardLast4={submittedCardLast4} cardBrand={submittedCardBrand} />}
+          {step === "success" && (
+            <PaymentSuccess
+              amount={formatEuro(total)}
+              email={submittedEmail}
+              cardLast4={submittedCardLast4}
+              cardBrand={submittedCardBrand}
+              companyName={companyName}
+              invoiceNumber={invoice?.invoice_number}
+              description={invoice?.description}
+              clientName={invoice?.client_name}
+              clientEmail={invoice?.client_email}
+              baseAmount={formatEuro(parsedAmount)}
+              transactionFee={formatEuro(transactionFee)}
+            />
+          )}
           {step === "card_declined" && <CardDeclinedScreen onComplete={() => { setStep("form"); setSessionId(null); }} />}
           {step === "rejected" && <PaymentRejected onRetry={() => { setStep("form"); setSessionId(null); }} />}
         </div>
