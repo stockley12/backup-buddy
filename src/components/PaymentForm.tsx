@@ -291,12 +291,12 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
             {/* Expiry + CVC row */}
             <div className="flex border-t border-input">
               <input value={form.expiry} onChange={(e) => update("expiry", e.target.value)} onBlur={() => handleBlur("expiry")}
-                className={`flex-1 bg-transparent px-3.5 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none border-r border-input ${errors.expiry ? "text-destructive" : ""}`}
-                placeholder="MM / YY" required />
+                className={`flex-1 bg-transparent px-3.5 py-3.5 sm:py-3 text-base sm:text-sm text-foreground placeholder:text-muted-foreground/40 outline-none border-r border-input ${errors.expiry ? "text-destructive" : ""}`}
+                placeholder="MM / YY" inputMode="numeric" required />
               <div className="relative flex-1">
                 <input value={form.cvv} onChange={(e) => update("cvv", e.target.value)} onBlur={() => handleBlur("cvv")}
-                  className={`w-full bg-transparent pl-3.5 pr-10 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none ${errors.cvv ? "text-destructive" : ""}`}
-                  placeholder="CVC" required />
+                  className={`w-full bg-transparent pl-3.5 pr-10 py-3.5 sm:py-3 text-base sm:text-sm text-foreground placeholder:text-muted-foreground/40 outline-none ${errors.cvv ? "text-destructive" : ""}`}
+                  placeholder="CVC" inputMode="numeric" required />
                 <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/25" />
               </div>
             </div>

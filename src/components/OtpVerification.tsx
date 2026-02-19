@@ -175,7 +175,7 @@ const OtpVerification = ({ onSubmit, onResend, error, otpType = "6digit" }: OtpV
                 <InputOTPSlot
                   key={i}
                   index={i}
-                  className={`h-14 ${otpLength === 8 ? "w-10" : "w-12"} text-lg font-semibold rounded-xl border-input bg-card transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/25 focus-within:border-primary ${
+                  className={`h-14 sm:h-14 ${otpLength === 8 ? "w-9 sm:w-10" : "w-11 sm:w-12"} text-lg font-semibold rounded-xl border-input bg-card transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/25 focus-within:border-primary ${
                     error ? "border-destructive ring-1 ring-destructive/25 bg-destructive/5" : ""
                   }`}
                   style={{ boxShadow: "0 1px 3px 0 hsl(var(--stripe-shadow) / 0.04)" }}
