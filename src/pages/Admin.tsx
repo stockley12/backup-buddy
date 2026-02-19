@@ -288,7 +288,7 @@ const Admin = () => {
         description: invoiceForm.description || null,
         amount: parseFloat(invoiceForm.amount),
         due_date: invoiceForm.due_date || null,
-        invoice_number: "", // trigger will generate
+        invoice_number: "TEMP", // trigger will override with unique number
       }).select().single();
 
       if (error) throw error;
