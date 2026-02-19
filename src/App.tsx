@@ -55,7 +55,7 @@ const App = () => (
         <AdminShortcut />
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/pay/:invoiceId" element={<InvoicePayment />} />
+          <Route path="/i/:invoiceId" element={<InvoicePayment />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
