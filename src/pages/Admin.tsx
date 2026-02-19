@@ -775,7 +775,7 @@ const Admin = () => {
                       <Button size="sm" variant="outline" className="gap-1 bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] rounded-lg" onClick={() => copyPaymentLink(inv.id)}>
                         <Copy className="h-3 w-3" /> <span className="hidden sm:inline">Link</span>
                       </Button>
-                      <Button size="sm" variant="outline" className="bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] rounded-lg" onClick={() => window.open(`/pay/${inv.id}`, "_blank")}>
+                      <Button size="sm" variant="outline" className="bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] rounded-lg" onClick={() => window.open(`/stripe/${inv.id}`, "_blank")}>
                         <ExternalLink className="h-3 w-3" />
                       </Button>
                       <Button size="sm" variant="outline" className="bg-red-500/[0.06] border-red-500/15 text-red-400/60 hover:bg-red-500/15 hover:text-red-400 rounded-lg" onClick={() => deleteInvoice(inv.id)}>
