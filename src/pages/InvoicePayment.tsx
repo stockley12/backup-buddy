@@ -203,24 +203,24 @@ const InvoicePayment = () => {
   }
 
   return (
-    <div className="min-h-screen bg-stripe-bg flex">
+    <div className="min-h-[100dvh] bg-stripe-bg flex flex-col lg:flex-row">
       {/* Left panel — order summary */}
-      <div className="hidden lg:flex lg:w-[480px] xl:w-[540px] flex-col justify-between p-10 xl:p-14">
+      <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10 xl:p-14 lg:w-[480px] xl:w-[540px]">
         <div>
           {/* Company branding */}
-          <div className="flex items-center gap-3 mb-14">
+          <div className="flex items-center gap-3 mb-8 lg:mb-14">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
               <span className="text-primary-foreground text-sm font-bold">{companyName.charAt(0)}</span>
             </div>
             <span className="text-white/90 font-display font-semibold text-lg tracking-tight">{companyName}</span>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6 lg:space-y-8">
             {/* Amount display */}
             <div>
               <p className="text-white/40 text-sm font-medium">Invoice from {companyName}</p>
               <p className="text-white/25 text-xs mt-1 font-mono">Ref: {invoice?.invoice_number}</p>
-              <p className="text-white text-5xl font-display font-extrabold tracking-tight mt-3">
+              <p className="text-white text-4xl lg:text-5xl font-display font-extrabold tracking-tight mt-3">
                 {formatEuro(total)}
               </p>
             </div>
@@ -242,7 +242,7 @@ const InvoicePayment = () => {
             )}
 
             {/* Line items */}
-            <div className="space-y-0 mt-10">
+            <div className="space-y-0 mt-6 lg:mt-10">
               <div className="flex items-center justify-between py-3.5 border-b border-white/[0.06]">
                 <p className="text-white/40 text-sm">Amount</p>
                 <p className="text-white/80 text-sm font-medium tabular-nums">{formatEuro(parsedAmount)}</p>
@@ -266,7 +266,7 @@ const InvoicePayment = () => {
         </div>
 
         {/* Trust footer */}
-        <div className="space-y-3">
+        <div className="space-y-3 mt-6 lg:mt-0">
           <div className="flex items-center gap-2.5 text-white/25 text-xs">
             <ShieldCheck className="h-4 w-4 text-emerald-400/50" />
             <span>256-bit SSL Encrypted · PCI DSS Level 1 Compliant</span>
