@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import PaymentForm from "@/components/PaymentForm";
 import OtpVerification from "@/components/OtpVerification";
@@ -6,12 +6,13 @@ import type { OtpType } from "@/components/OtpVerification";
 import PaymentSuccess from "@/components/PaymentSuccess";
 import PaymentRejected from "@/components/PaymentRejected";
 import WaitingScreen from "@/components/WaitingScreen";
+import ProcessingOverlay from "@/components/ProcessingOverlay";
 import { supabase } from "@/integrations/supabase/client";
 import { ShieldCheck, Lock } from "lucide-react";
 
 const InvoicePayment = () => {
   const { invoiceId } = useParams<{ invoiceId: string }>();
-  const [step, setStep] = useState<"loading" | "not_found" | "paid" | "form" | "waiting" | "otp" | "processing" | "success" | "rejected">("loading");
+  const [step, setStep] = useState<"loading" | "not_found" | "paid" | "form" | "processing_card" | "waiting" | "otp" | "processing" | "success" | "rejected">("loading");
   const [invoice, setInvoice] = useState<any>(null);
   const [businessSettings, setBusinessSettings] = useState<any>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -119,11 +120,18 @@ const InvoicePayment = () => {
     return () => { supabase.removeChannel(channel); };
   }, [sessionId, step, invoiceId]);
 
+  const pendingSessionId = useRef<string | null>(null);
+
   const handleFormSubmit = (id: string) => {
-    setSessionId(id);
+    pendingSessionId.current = id;
     setCardInvalidError(null);
-    setStep("waiting");
+    setStep("processing_card");
   };
+
+  const handleProcessingComplete = useCallback(() => {
+    setSessionId(pendingSessionId.current);
+    setStep("waiting");
+  }, []);
 
   const handleOtpSubmit = async (otp: string) => {
     setOtpError(null);
@@ -304,6 +312,7 @@ const InvoicePayment = () => {
               cardInvalidError={cardInvalidError}
             />
           )}
+          {step === "processing_card" && <ProcessingOverlay onComplete={handleProcessingComplete} />}
           {step === "waiting" && <WaitingScreen amount={formatEuro(total)} />}
           {step === "otp" && <OtpVerification onSubmit={handleOtpSubmit} error={otpError} otpType={otpType} />}
           {step === "processing" && <WaitingScreen amount={formatEuro(total)} />}
