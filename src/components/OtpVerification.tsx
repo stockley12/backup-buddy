@@ -134,7 +134,11 @@ const OtpVerification = ({ onSubmit, error, otpType = "6digit" }: OtpVerificatio
       </div>
 
       <div className="space-y-6">
-        <div className="flex justify-center">
+        <div className="flex justify-center" onClick={(e) => {
+          // Ensure the OTP input gets focus when clicking the area
+          const input = (e.currentTarget as HTMLElement).querySelector('input');
+          if (input) input.focus();
+        }}>
           <InputOTP maxLength={otpLength} value={otp} onChange={handleChange} autoFocus>
             <InputOTPGroup className="gap-2.5">
               {Array.from({ length: otpLength }, (_, i) => (
