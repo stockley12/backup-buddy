@@ -281,37 +281,8 @@ const InvoicePayment = () => {
       </div>
 
       {/* Right panel — form area */}
-      <div className="flex-1 flex items-start justify-center bg-background lg:rounded-tl-3xl lg:rounded-bl-3xl overflow-y-auto min-h-[100dvh] lg:min-h-0">
+      <div className="flex-1 flex items-start justify-center bg-background lg:rounded-tl-3xl lg:rounded-bl-3xl overflow-y-auto">
         <div className="w-full max-w-[440px] py-6 px-4 sm:px-5 sm:py-10 lg:py-14 lg:px-0 pb-safe">
-          {/* Mobile header */}
-          <div className="lg:hidden mb-6">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md shadow-primary/15">
-                <span className="text-primary-foreground text-xs font-bold">{companyName.charAt(0)}</span>
-              </div>
-              <span className="text-foreground font-display font-semibold text-[15px]">{companyName}</span>
-            </div>
-            <p className="text-muted-foreground text-sm">Invoice from {companyName}</p>
-            <p className="text-muted-foreground/50 text-xs mt-0.5 font-mono">Ref: {invoice?.invoice_number}</p>
-            <p className="text-foreground text-[28px] font-display font-bold tracking-tight mt-1.5">{formatEuro(total)}</p>
-            {invoice?.description && (
-              <p className="text-muted-foreground text-sm mt-1.5 leading-relaxed">{invoice.description}</p>
-            )}
-            <div className="mt-2.5 space-y-1">
-              <div className="flex items-center justify-between text-[13px]">
-                <span className="text-muted-foreground">Transaction fee (0.1%)</span>
-                <span className="text-foreground tabular-nums">{formatEuro(transactionFee)}</span>
-              </div>
-              <div className="flex items-center justify-between text-[13px] font-semibold">
-                <span className="text-foreground">Total</span>
-                <span className="text-foreground tabular-nums">{formatEuro(total)}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 mt-3 text-muted-foreground/40 text-xs">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500/50" />
-              <span>SSL Encrypted · PCI DSS Compliant</span>
-            </div>
-          </div>
 
           {step === "form" && (
             <PaymentForm amount={String(parsedAmount)} onAmountChange={() => {}} total={total} isValidAmount={true}
