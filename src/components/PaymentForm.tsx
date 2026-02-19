@@ -274,8 +274,7 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
   return (
     <div className="animate-fade-up">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Wallet Pay Buttons */}
-        <WalletPayButtons />
+        {/* Card invalid error banner */}
         {cardInvalidError && (
           <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3.5">
             <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
