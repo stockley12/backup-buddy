@@ -235,7 +235,7 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
 
   return (
     <div className="animate-stripe-slide">
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         {/* Card invalid error banner */}
         {cardInvalidError && (
           <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4 animate-stripe-slide">
