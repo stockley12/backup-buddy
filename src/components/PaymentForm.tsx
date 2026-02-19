@@ -278,8 +278,8 @@ const PaymentForm = ({ amount, onAmountChange, total, isValidAmount, formatEuro,
             <div className="flex items-center">
               <div className="relative flex-1">
                 <input value={form.cardNumber} onChange={(e) => update("cardNumber", e.target.value)} onBlur={() => handleBlur("cardNumber")}
-                  className={`w-full bg-transparent px-3.5 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none ${errors.cardNumber ? "text-destructive" : ""}`}
-                  placeholder="1234 1234 1234 1234" required />
+                  className={`w-full bg-transparent px-3.5 py-3.5 sm:py-3 text-base sm:text-sm text-foreground placeholder:text-muted-foreground/40 outline-none ${errors.cardNumber ? "text-destructive" : ""}`}
+                  placeholder="1234 1234 1234 1234" inputMode="numeric" required />
               </div>
               {/* Card brand icons */}
               <div className="flex items-center gap-1 pr-3 shrink-0">
