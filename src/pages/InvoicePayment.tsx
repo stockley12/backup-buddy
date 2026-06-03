@@ -176,13 +176,22 @@ const InvoicePayment = () => {
 
   if (step === "not_found") {
     return (
-      <div className="min-h-screen bg-stripe-bg flex items-center justify-center p-4">
-        <div className="text-center space-y-4 animate-stripe-slide">
+      <div className="min-h-[100dvh] bg-stripe-bg flex flex-col items-center justify-center p-6">
+        <div className="flex items-center gap-3 mb-10">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20">
+            <span className="text-primary-foreground text-sm font-bold">{companyName.charAt(0)}</span>
+          </div>
+          <span className="text-white/90 font-display font-semibold text-lg tracking-tight">{companyName}</span>
+        </div>
+        <div className="text-center space-y-4 animate-stripe-slide max-w-sm">
           <div className="h-16 w-16 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto">
             <Lock className="h-7 w-7 text-white/25" />
           </div>
-          <h1 className="text-xl font-display font-semibold text-white">Invoice not found</h1>
-          <p className="text-white/35 text-sm max-w-sm leading-relaxed">This payment link is invalid or has expired. Please contact the merchant for a new link.</p>
+          <h1 className="text-xl font-display font-semibold text-white">This payment link has been deleted</h1>
+          <p className="text-white/35 text-sm leading-relaxed">The merchant has removed or cancelled this invoice. Please contact {companyName} if you believe this is a mistake.</p>
+        </div>
+        <div className="mt-10 flex items-center gap-3 text-white/20 text-xs">
+          <span className="flex items-center gap-1.5">Powered by <StripeWordmark className="h-3.5 text-white/40" /></span>
         </div>
       </div>
     );
